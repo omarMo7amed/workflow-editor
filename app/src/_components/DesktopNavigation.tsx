@@ -1,11 +1,8 @@
-import { usePathname } from "next/navigation";
 import motion from "@/app/src/_components/Motion";
 import { ArrowRight } from "lucide-react";
 import NavItems from "./NavItems";
 
-export default function DesktopNavigation() {
-  const pathname = usePathname();
-  console.log(pathname);
+export default function DesktopNavigation({ pathname }: { pathname: string }) {
   return (
     <>
       <nav className="hidden md:flex items-center gap-8">

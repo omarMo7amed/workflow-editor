@@ -41,7 +41,7 @@ export default function WorkflowEditor() {
   );
 
   return (
-    <div style={{ width: "100%", height: "90vh" }}>
+    <div style={{ width: "100%", height: "calc(100vh - 73px)" }}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -52,7 +52,7 @@ export default function WorkflowEditor() {
       >
         <MiniMap />
         <Controls />
-        <Background color="#aaa" gap={16} />
+        <Background className="bg-gray-200" gap={16} />
       </ReactFlow>
     </div>
   );

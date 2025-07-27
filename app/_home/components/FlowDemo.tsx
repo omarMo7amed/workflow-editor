@@ -1,20 +1,14 @@
-import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
-import { Brain, FileText, Mail } from "lucide-react";
+import { flowDemoSteps } from "@/app/src/_utils/constants";
+import motion from "@/app/src/_components/Motion";
 import Step from "./StepFlowDemo";
 
 export default function FlowDemo() {
   const [activeStep, setActiveStep] = useState(0);
 
-  const steps = [
-    { icon: FileText, label: "Read PDF", color: "bg-slate-600" },
-    { icon: Brain, label: "AI Process", color: "bg-slate-700" },
-    { icon: Mail, label: "Send Email", color: "bg-slate-800" },
-  ];
-
   useEffect(() => {
     const interval = setInterval(() => {
-      setActiveStep((prev) => (prev + 1) % steps.length);
+      setActiveStep((prev) => (prev + 1) % flowDemoSteps.length);
     }, 2000);
     return () => clearInterval(interval);
   }, []);
@@ -49,9 +43,9 @@ export default function FlowDemo() {
         </motion.h3>
 
         <div className="flex items-center justify-center space-x-8">
-          {steps.map((step, index) => (
+          {flowDemoSteps.map((step, index) => (
             <Step
-              length={steps.length}
+              length={flowDemoSteps.length}
               step={step}
               index={index}
               key={step.label}
@@ -59,7 +53,6 @@ export default function FlowDemo() {
             />
           ))}
         </div>
-
         <div className="text-center mt-8">
           <motion.p
             className="text-slate-300 text-lg"
@@ -68,7 +61,7 @@ export default function FlowDemo() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
           >
-            {steps[activeStep].label}
+            {flowDemoSteps[activeStep].label}
           </motion.p>
         </div>
       </div>

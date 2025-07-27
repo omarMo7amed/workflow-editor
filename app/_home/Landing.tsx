@@ -1,34 +1,37 @@
 "use client";
 import motion from "@/app/src/_components/Motion";
 import { ArrowRight, ChevronDown } from "lucide-react";
-import FloatingNodes from "./FloatingNodes";
-import BackgroundGrid from "./BackgroundGrid";
-import InteractiveConnections from "./InteractiveConnections";
+import FloatingNodes from "./components/FloatingNodes";
+import BackgroundGrid from "./components/BackgroundGrid";
+import InteractiveConnections from "./components/InteractiveConnections";
+import { HEIGHTOFHEADER } from "../src/_utils/constants";
 
-const Home: React.FC = () => {
-  const fadeInUp = {
-    initial: { opacity: 0, y: 60 },
-    animate: { opacity: 1, y: 0 },
-    transition: { duration: 0.6, ease: "easeOut" },
-  };
+const fadeInUp = {
+  initial: { opacity: 0, y: 60 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.6, ease: "easeOut" },
+};
 
-  const staggerContainer = {
-    animate: {
-      transition: {
-        staggerChildren: 0.1,
-      },
+const staggerContainer = {
+  animate: {
+    transition: {
+      staggerChildren: 0.1,
     },
-  };
-
+  },
+};
+export default function Landing() {
   return (
-    <div className="min-h-[calc(100vh-60px)] bg-gradient-to-br  from-slate-50 via-slate-100 to-slate-200 relative overflow-hidden">
+    <div
+      className={`min-h-[calc(100vh-${HEIGHTOFHEADER}px)] bg-gradient-to-br  from-slate-50 via-slate-100 to-slate-200 relative overflow-hidden`}
+    >
       {/* Background Elements */}
       <BackgroundGrid />
       <FloatingNodes />
       <InteractiveConnections />
 
+      {/* Content */}
       <motion.section
-        className="min-h-[calc(100vh-60px)] flex flex-col justify-center items-center px-6 relative  z-10"
+        className={`min-h-[calc(100vh-${HEIGHTOFHEADER}px)] flex flex-col justify-center items-center px-6 relative  z-10`}
         initial="initial"
         animate="animate"
         variants={staggerContainer}
@@ -80,6 +83,4 @@ const Home: React.FC = () => {
       </motion.section>
     </div>
   );
-};
-
-export default Home;
+}

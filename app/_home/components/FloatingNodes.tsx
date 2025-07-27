@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Node } from "../src/_types/types";
+import { Node } from "../../src/_types/types";
 
 export default function FloatingNodes() {
   const [nodes, setNodes] = useState<Node[]>([]);

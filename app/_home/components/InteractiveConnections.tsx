@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import { Connection } from "../src/_types/types";
+import { Connection } from "../../src/_types/types";
 import motion from "@/app/src/_components/Motion";
+import { HEIGHTOFHEADER } from "../../src/_utils/constants";
 
 export default function InteractiveConnections() {
   const [connections, setConnections] = useState<Connection[]>([]);
   const svgRef = useRef<SVGSVGElement>(null);
+  //remember ya zmeeeeeeeeeeeeeeeel 73 height of the navigation bar
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -15,9 +17,9 @@ export default function InteractiveConnections() {
         newConnections.push({
           id: i,
           x1: e.clientX,
-          y1: e.clientY,
+          y1: e.clientY - HEIGHTOFHEADER,
           x2: e.clientX + Math.cos(angle) * distance,
-          y2: e.clientY + Math.sin(angle) * distance,
+          y2: e.clientY + Math.sin(angle) * distance - HEIGHTOFHEADER,
         });
       }
       setConnections(newConnections);

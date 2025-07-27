@@ -1,3 +1,9 @@
+import X from "../src/_components/WorkFlowEditor";
+
 export default function Workflow() {
-  return <div>Workflow</div>;
+  return (
+    <div>
+      <X />
+    </div>
+  );
 }

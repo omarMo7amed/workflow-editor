@@ -1,5 +1,5 @@
 "use client";
-import FlowDemo from "../src/_components/FlowDemo";
+import FlowDemo from "./components/FlowDemo";
 
 // Animated Flow Demo Component
 
@@ -20,7 +20,6 @@ const AboutSection = () => {
       </div>
 
       <div className="container mx-auto px-6 relative z-10">
-        {/* Header */}
         <FlowDemo />
       </div>
     </section>

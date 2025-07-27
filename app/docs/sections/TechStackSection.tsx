@@ -3,6 +3,8 @@ import {
   Libraries,
   Technologies,
 } from "@/app/src/_utils/constants";
+import TechItem from "../components/TechItem";
+import { TechnologiesTypes } from "@/app/src/_types/types";
 
 export default function TechStack() {
   return (
@@ -23,7 +25,6 @@ export default function TechStack() {
           <ul className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {Technologies.map((tech) => (
               <li
-                id=""
                 key={tech.name}
                 className="bg-gray-50 rounded-lg p-4 text-center border border-gray-200"
               >
@@ -41,14 +42,8 @@ export default function TechStack() {
             Specialized Libraries
           </h3>
           <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {Libraries.map((tech) => (
-              <li
-                key={tech.name}
-                className="bg-white border border-gray-200 rounded-lg p-4"
-              >
-                <div className="font-medium text-gray-900">{tech.name}</div>
-                <div className="text-sm text-gray-600 mt-1">{tech.desc}</div>
-              </li>
+            {Libraries.map((tech: TechnologiesTypes) => (
+              <TechItem tech={tech} key={tech.name} />
             ))}
           </ul>
         </div>
@@ -58,14 +53,8 @@ export default function TechStack() {
             Data & Integration
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {Integrations.map((tech) => (
-              <div
-                key={tech.name}
-                className="bg-white border border-gray-200 rounded-lg p-4"
-              >
-                <div className="font-medium text-gray-900">{tech.name}</div>
-                <div className="text-sm text-gray-600 mt-1">{tech.desc}</div>
-              </div>
+            {Integrations.map((tech: TechnologiesTypes) => (
+              <TechItem tech={tech} key={tech.name} />
             ))}
           </div>
         </div>

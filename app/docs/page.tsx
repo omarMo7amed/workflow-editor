@@ -11,20 +11,26 @@ import PortfolioValueSection from "./sections/PortfolioValueSection";
 import TableOfContents from "./components/TableOfContents";
 import { docsNavigationItems } from "../src/_utils/constants";
 
+const SectionsId = docsNavigationItems.map((item) => item.id);
+
 export default function Docs() {
   const [activeSection, setActiveSection] = useState<string>("overview");
 
   useEffect(() => {
     const handleScroll = (): void => {
-      const sections = docsNavigationItems.map((item) => item.id);
       const scrollPosition = window.scrollY + 100;
 
-      for (let i = sections.length - 1; i >= 0; i--) {
-        const element = document.getElementById(sections[i]);
-        if (element && element.offsetTop <= scrollPosition) {
-          setActiveSection(sections[i]);
-          break;
+      for (let i = SectionsId.length - 1; i >= 0; i--) {
+        const element = document.getElementById(SectionsId[i]);
+
+        if (!element) continue;
+
+        if (element.offsetTop > scrollPosition) {
+          continue;
         }
+
+        setActiveSection(SectionsId[i]);
+        break;
       }
     };
 

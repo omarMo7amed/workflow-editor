@@ -1,16 +1,5 @@
-import { motion } from "framer-motion";
-import { LucideIcon } from "lucide-react";
-
-type StepProps = {
-  step: {
-    icon: LucideIcon;
-    label: string;
-    color: string; // e.g., "bg-slate-600"
-  };
-  index: number;
-  activeStep: number;
-  length: number;
-};
+import motion from "@/app/src/_components/Motion";
+import { StepProps } from "@/app/src/_types/types";
 
 export default function Step({ step, index, activeStep, length }: StepProps) {
   const Icon = step.icon;

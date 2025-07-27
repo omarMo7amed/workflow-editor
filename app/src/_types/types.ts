@@ -1,3 +1,5 @@
+import { LucideIcon } from "lucide-react";
+
 export interface Node {
   id: number;
   x: number;
@@ -27,7 +29,8 @@ export interface ObjectiveCardProps {
 }
 
 export interface TableOfContentsProps {
-  activeSection: string;
+  activeSection?: string;
+  side?: "left" | "right";
 }
 
 export interface docsNavigationItems {
@@ -51,3 +54,51 @@ export interface DevObjective {
   description: string;
 }
 
+export interface TechnologiesTypes {
+  name: string;
+  desc: string;
+}
+
+export type StepProps = {
+  step: {
+    icon: LucideIcon;
+    label: string;
+    color: string; // e.g., "bg-slate-600"
+  };
+  index: number;
+  activeStep: number;
+  length: number;
+};
+
+export type NodeType =
+  | "readPdf"
+  | "summarize"
+  | "sendEmail"
+  | "inputText"
+  | "custom";
+
+export interface Edge {
+  id: string;
+  source: string;
+  target: string;
+}
+
+export interface WorkflowNode {
+  id: string;
+  type: NodeType;
+  position: { x: number; y: number };
+  data: {
+    label: string;
+    input?: unknown;
+    output?: unknown;
+    config?: Record<string, unknown>;
+  };
+}
+
+export interface Workflow {
+  id: string;
+  name: string;
+  createdAt: string;
+  nodes: WorkflowNode[];
+  edges: Edge[];
+}

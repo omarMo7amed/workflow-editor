@@ -1,7 +1,9 @@
+import { Brain, FileText, Mail } from "lucide-react";
 import {
   DevObjective,
   docsNavigationItems as NavigationItems,
   PortfolioValueCardProps,
+  TechnologiesTypes,
 } from "../_types/types";
 
 export const docsNavigationItems: NavigationItems[] = [
@@ -102,7 +104,7 @@ export const portfolioValues: PortfolioValueCardProps[] = [
   },
 ];
 
-export const Technologies = [
+export const Technologies: TechnologiesTypes[] = [
   { name: "Next.js 15", desc: "App Router, RSC" },
   { name: "TypeScript", desc: "Type Safety" },
   { name: "Tailwind CSS", desc: "Utility-First Styling" },
@@ -140,4 +142,12 @@ export const Integrations = [
     name: "Mock Service Worker",
     desc: "API mocking for development and testing",
   },
+];
+
+export const HEIGHTOFHEADER: number = 73;
+
+export const flowDemoSteps = [
+  { icon: FileText, label: "Read PDF", color: "bg-slate-600" },
+  { icon: Brain, label: "AI Process", color: "bg-slate-700" },
+  { icon: Mail, label: "Send Email", color: "bg-slate-800" },
 ];

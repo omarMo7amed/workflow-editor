@@ -1,15 +1,14 @@
 import { docsNavigationItems as NavigationItems } from "@/app/src/_types/types";
 import { ChevronRight } from "lucide-react";
-// // {
-//   item: NavigationItems;
-//   scrollToSection: (id: string) => void;
-//   activeSection: string;
-// //
+
 export default function Item({
   item,
   scrollToSection,
   activeSection,
-  setSelected,
+}: {
+  item: NavigationItems;
+  scrollToSection: (id: string) => void;
+  activeSection: string;
 }) {
   return (
     <button
@@ -17,7 +16,6 @@ export default function Item({
       key={item.id}
       onClick={() => {
         scrollToSection(item.id);
-        setSelected(item.id);
       }}
       className={`
           w-full text-left px-3 py-2 rounded-md text-sm transition-colors cursor-pointer
