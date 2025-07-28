@@ -1,5 +1,5 @@
 "use client";
-import React, { useCallback } from "react";
+import { useCallback } from "react";
 import ReactFlow, {
   addEdge,
   Background,
@@ -19,13 +19,26 @@ const initialNodes: Node[] = [
     id: "1",
     type: "default",
     position: { x: 100, y: 100 },
-    data: { label: "📄 Read PDF" },
+    data: { label: "Read PDF" },
   },
   {
     id: "2",
     type: "default",
     position: { x: 300, y: 100 },
-    data: { label: "🧠 Summarize" },
+    data: { label: "Summarize" },
+  },
+
+  {
+    id: "3",
+    type: "default",
+    position: { x: 400, y: 100 },
+    data: { label: "Send Email" },
+  },
+  {
+    id: "4",
+    type: "default",
+    position: { x: 600, y: 100 },
+    data: { label: "Report" },
   },
 ];
 

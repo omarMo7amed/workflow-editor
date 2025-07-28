@@ -19,6 +19,7 @@ const staggerContainer = {
     },
   },
 };
+
 export default function Landing() {
   return (
     <div

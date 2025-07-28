@@ -1,8 +1,10 @@
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Save } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Button from "./Button";
 
 export default function EditorHeader() {
   const router = useRouter();
+
   return (
     <div className="flex items-center justify-between">
       <div className="flex gap-2 items-center">
@@ -27,13 +29,17 @@ export default function EditorHeader() {
       </div>
 
       <div className="flex gap-3">
-        <button className="bg-slate-200 text-slate-700 hover:bg-slate-300 focus:ring-2 focus:ring-slate-400 transition-colors duration-200 px-4 py-1.5 rounded-xl text-sm font-medium cursor-pointer">
+        <Button degree="secondary" extraStyle="rounded-md">
           Discard
-        </button>
+        </Button>
 
-        <button className="bg-slate-900 text-white hover:bg-slate-700 focus:ring-2 focus:ring-slate-400 transition-colors duration-200 px-4 py-1.5 rounded-xl text-sm font-semibold cursor-pointer">
-          Execute Workflow
-        </button>
+        <Button
+          degree="main"
+          extraStyle="rounded-md flex items-center justify-between gap-2"
+        >
+          <Save size={16} />
+          <span>Save</span>
+        </Button>
       </div>
     </div>
   );

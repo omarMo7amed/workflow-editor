@@ -1,4 +1,5 @@
 import { LucideIcon } from "lucide-react";
+import { ReactNode } from "react";
 
 export interface Node {
   id: number;
@@ -31,6 +32,8 @@ export interface ObjectiveCardProps {
 export interface TableOfContentsProps {
   activeSection?: string;
   side?: "left" | "right";
+  children?: ReactNode;
+  activeTab?: string;
 }
 
 export interface docsNavigationItems {
@@ -70,12 +73,7 @@ export type StepProps = {
   length: number;
 };
 
-export type NodeType =
-  | "readPdf"
-  | "summarize"
-  | "sendEmail"
-  | "inputText"
-  | "custom";
+export type NodeType = "readPdf" | "summarize" | "sendEmail" | "report";
 
 export interface Edge {
   id: string;
@@ -101,4 +99,20 @@ export interface Workflow {
   createdAt: string;
   nodes: WorkflowNode[];
   edges: Edge[];
+}
+
+export interface FileUploadProps {
+  onFilesUpload?: (files: File[]) => void;
+  acceptedFileTypes?: string;
+  maxFileSize?: number;
+  multiple?: boolean;
+}
+
+export interface UploadFilesListProps {
+  files: File[];
+  removeFile: (index: number) => void;
+}
+
+export interface ChildrenType {
+  children: ReactNode;
 }
