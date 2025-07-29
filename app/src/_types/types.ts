@@ -116,3 +116,8 @@ export interface UploadFilesListProps {
 export interface ChildrenType {
   children: ReactNode;
 }
+
+export interface SearchFieldProps {
+  query: string;
+  setQuery: (x: string) => void;
+}

@@ -22,7 +22,11 @@ export default function EditorHeader() {
         </div>
       </div>
 
-      <div className="flex-1 mx-auto flex justify-center items-center">
+      <div className="flex-1 mx-auto flex gap-2.5 justify-center items-center">
+        <p className="bg-slate-200/50 text-slate-700 px-4 text-sm py-1 rounded-xl ">
+          workflow name
+        </p>
+
         <p className="bg-slate-200/50 text-slate-700 px-4 text-sm py-1 rounded-xl ">
           Diagram view
         </p>

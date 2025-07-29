@@ -1,7 +1,6 @@
 "use client";
 import motion from "@/app/src/_components/Motion";
 import { usePathname } from "next/navigation";
-
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
 import Logo from "./Logo";

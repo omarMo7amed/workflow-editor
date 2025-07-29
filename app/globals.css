@@ -7,3 +7,13 @@ body {
 html {
   scroll-padding-top: 80px;
 }
+
+input,
+textarea {
+  color: #4a5565;
+  outline: none;
+}
+
+::placeholder {
+  color: #99a1af;
+}

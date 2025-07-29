@@ -24,7 +24,7 @@ export default function TableOfContents({
       <aside
         className={`hidden md:block relative ${
           side !== "right" ? "left-0 border-r" : "border-l right-0"
-        } w-80 h-[calc(100vh-${HEIGHTOFHEADER}px)] overflow-y-auto bg-white border-l border-gray-200 z-40 shadow-md space-y-1`}
+        } w-72 h-[calc(100vh-${HEIGHTOFHEADER}px)] overflow-y-auto bg-white border-l border-gray-200 z-40 shadow-md space-y-1`}
       >
         {children}
       </aside>
@@ -34,7 +34,7 @@ export default function TableOfContents({
 
 function Head({ children }: ChildrenType) {
   return (
-    <div className=" px-6 py-2 bg-white border-b-2 border-gray-200 shadow-sm rounded-t-lg space-x-4">
+    <div className="px-2 py-2 bg-white border-b-2 border-gray-200 shadow-sm rounded-t-lg space-x-4">
       <div className="flex justify-center items-center">
         <div className="border-2 border-gray-200 rounded-md shadow-sm overflow-hidden">
           {children}
@@ -66,7 +66,7 @@ function NavItem({ children }: ChildrenType) {
 
 function Body({ children }: ChildrenType) {
   return (
-    <nav className="space-y-1 p-6 flex flex-col gap-3 justify-between">
+    <nav className="space-y-1 p-2 flex flex-col gap-3 justify-between">
       {children}
     </nav>
   );
@@ -76,7 +76,7 @@ TableOfContents.Head = Head;
 TableOfContents.Body = Body;
 TableOfContents.NavItem = NavItem;
 
-function useTableOfContentsContext() {
+export function useTableOfContentsContext() {
   const context = useContext(TableOfContentsContext);
   if (context === undefined) {
     throw new Error(

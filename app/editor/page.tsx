@@ -1,14 +1,20 @@
 "use client";
-import Button from "../src/_components/Button";
-import { FileUpload } from "../src/_components/FileUpload";
+
+import InstructionToAddNode from "../src/_components/InstructionToAddNode";
 import InstructionField from "../src/_components/InstructionField";
-import TableOfContents from "../src/_components/TableOfContents";
+import TableOfContents from "../src/_hooks/useTableOfContents";
+import { FileUpload } from "../src/_components/FileUpload";
+import NodeControls from "../src/_components/NodeControls";
+import DefaultNodes from "../src/_components/DefaultNodes";
+import Inspector from "../src/_components/Instpector";
+import Button from "../src/_components/Button";
+import Nodes from "../src/_components/Nodes";
 import Editor from "./Editor";
-import { useWorkflowStore } from "../src/_hooks/useWorkflowStore";
+import Load from "../src/_components/Load";
+import Help from "../src/_components/Help";
+import Analyze from "../src/_components/Analyze";
 
 export default function Page() {
-  const { addNode } = useWorkflowStore();
-
   const handleFilesUpload = (files: File[]) => {
     console.log("Files uploaded in TableOfContents:", files);
     // Handle the uploaded files here
@@ -20,35 +26,20 @@ export default function Page() {
       <TableOfContents side={"left"} activeTab="Nodes">
         <TableOfContents.Head>
           <TableOfContents.NavItem>Nodes</TableOfContents.NavItem>
+          <TableOfContents.NavItem>Inspector</TableOfContents.NavItem>
+          <TableOfContents.NavItem>Help</TableOfContents.NavItem>
         </TableOfContents.Head>
 
         <TableOfContents.Body>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              onClick={() => addNode("readPdf")}
-              className="bg-slate-200 rounded p-2 hover:bg-slate-300"
-            >
-              📄 Read PDF
-            </button>
-            <button
-              onClick={() => addNode("summarize")}
-              className="bg-slate-200 rounded p-2 hover:bg-slate-300"
-            >
-              🧠 Summarize
-            </button>
-            <button
-              onClick={() => addNode("sendEmail")}
-              className="bg-slate-200 rounded p-2 hover:bg-slate-300"
-            >
-              ✉️ Send Email
-            </button>
-            <button
-              onClick={() => addNode("report")}
-              className="bg-slate-200 rounded p-2 hover:bg-slate-300"
-            >
-              📊 Report
-            </button>
-          </div>
+          <Nodes>
+            <NodeControls />
+            <DefaultNodes />
+            <InstructionToAddNode />
+          </Nodes>
+
+          <Inspector>c</Inspector>
+
+          <Help> help</Help>
         </TableOfContents.Body>
       </TableOfContents>
 
@@ -61,18 +52,22 @@ export default function Page() {
         </TableOfContents.Head>
 
         <TableOfContents.Body>
-          <FileUpload
-            onFilesUpload={handleFilesUpload}
-            acceptedFileTypes=".png,.jpg,.jpeg,.pdf,.doc,.docx,.txt,.md"
-            maxFileSize={10}
-            multiple={true}
-          />
+          <Load>
+            <FileUpload
+              onFilesUpload={handleFilesUpload}
+              acceptedFileTypes=".png,.jpg,.jpeg,.pdf,.doc,.docx,.txt,.md"
+              maxFileSize={10}
+              multiple={true}
+            />
 
-          <InstructionField />
+            <InstructionField />
 
-          <Button degree="main" extraStyle="rounded-md">
-            Execute Workflow
-          </Button>
+            <Button degree="main" extraStyle="rounded-md">
+              Execute Workflow
+            </Button>
+          </Load>
+
+          <Analyze>Soon</Analyze>
         </TableOfContents.Body>
       </TableOfContents>
     </section>
