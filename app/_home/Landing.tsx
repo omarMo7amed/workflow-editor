@@ -4,7 +4,6 @@ import { ArrowRight, ChevronDown } from "lucide-react";
 import FloatingNodes from "./components/FloatingNodes";
 import BackgroundGrid from "./components/BackgroundGrid";
 import InteractiveConnections from "./components/InteractiveConnections";
-import { HEIGHTOFHEADER } from "../src/_utils/constants";
 
 const fadeInUp = {
   initial: { opacity: 0, y: 60 },
@@ -23,7 +22,7 @@ const staggerContainer = {
 export default function Landing() {
   return (
     <div
-      className={`min-h-[calc(100vh-${HEIGHTOFHEADER}px)] bg-gradient-to-br  from-slate-50 via-slate-100 to-slate-200 relative overflow-hidden`}
+      className={`min-h-minus-header bg-gradient-to-br  from-slate-50 via-slate-100 to-slate-200 relative overflow-hidden`}
     >
       {/* Background Elements */}
       <BackgroundGrid />
@@ -32,7 +31,7 @@ export default function Landing() {
 
       {/* Content */}
       <motion.section
-        className={`min-h-[calc(100vh-${HEIGHTOFHEADER}px)] flex flex-col justify-center items-center px-6 relative  z-10`}
+        className={`min-h-minus-header flex flex-col justify-center items-center px-6 relative  z-10`}
         initial="initial"
         animate="animate"
         variants={staggerContainer}

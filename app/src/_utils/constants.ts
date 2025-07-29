@@ -1,4 +1,3 @@
-"use client";
 import { Brain, FileText, Mail } from "lucide-react";
 import {
   DevObjective,
@@ -144,8 +143,6 @@ export const Integrations = [
     desc: "API mocking for development and testing",
   },
 ];
-
-export const HEIGHTOFHEADER: number = 73;
 
 export const flowDemoSteps = [
   { icon: FileText, label: "Read PDF", color: "bg-slate-600" },

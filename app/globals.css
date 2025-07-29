@@ -17,3 +17,7 @@ textarea {
 ::placeholder {
   color: #99a1af;
 }
+
+.min-h-minus-header {
+  min-height: calc(100vh - 73px);
+}
