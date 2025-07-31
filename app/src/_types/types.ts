@@ -121,3 +121,8 @@ export interface SearchFieldProps {
   query: string;
   setQuery: (x: string) => void;
 }
+
+export interface EditorSubHeaderPorps {
+  activeTab: string;
+  onActiveTab: (tab: string) => void;
+}

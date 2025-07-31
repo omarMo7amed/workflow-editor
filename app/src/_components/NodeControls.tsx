@@ -13,9 +13,9 @@ export default function NodeControls() {
   ];
 
   const filteredNodes = query
-    ? availableNodes.filter((node) =>
-        node.toLowerCase().includes(query.toLowerCase())
-      )
+    ? availableNodes.filter((node) => {
+        node.toLowerCase().includes(query.toLowerCase());
+      })
     : [];
 
   const handleAddNode = (type: string) => {

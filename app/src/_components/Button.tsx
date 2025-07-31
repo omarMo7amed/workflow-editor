@@ -14,7 +14,7 @@ export default function Button({
   onClick,
 }: ButtonProps) {
   const baseStyles =
-    "px-4 py-1.5 text-sm cursor-pointer transition-colors duration-200 focus:ring-2 focus:ring-slate-400";
+    "px-4 py-2 text-sm cursor-pointer transition-colors duration-200 focus:ring-2 focus:ring-slate-400";
 
   const degreeStyles = {
     main: " bg-slate-900 font-semibold text-white hover:bg-slate-700",

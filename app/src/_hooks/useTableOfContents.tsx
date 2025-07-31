@@ -23,7 +23,7 @@ export default function TableOfContents({
       <aside
         className={`hidden md:block relative ${
           side !== "right" ? "left-0 border-r" : "border-l right-0"
-        } w-72 h-[calc(100vh-73px)] overflow-y-auto bg-white border-l border-gray-200 z-40 shadow-md space-y-1`}
+        } w-74 h-[calc(100vh-73px)] overflow-y-auto bg-white border-l border-gray-200 z-40 shadow-md space-y-1`}
       >
         {children}
       </aside>

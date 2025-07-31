@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Connection } from "../../src/_types/types";
 import motion from "@/app/src/_components/Motion";
-import { HEIGHTOFHEADER } from "../../src/_utils/constants";
 
 export default function InteractiveConnections() {
   const [connections, setConnections] = useState<Connection[]>([]);
@@ -17,9 +16,9 @@ export default function InteractiveConnections() {
         newConnections.push({
           id: i,
           x1: e.clientX,
-          y1: e.clientY - HEIGHTOFHEADER,
+          y1: e.clientY - 73,
           x2: e.clientX + Math.cos(angle) * distance,
-          y2: e.clientY + Math.sin(angle) * distance - HEIGHTOFHEADER,
+          y2: e.clientY + Math.sin(angle) * distance - 73,
         });
       }
       setConnections(newConnections);

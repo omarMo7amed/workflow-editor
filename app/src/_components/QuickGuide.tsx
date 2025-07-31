@@ -2,7 +2,7 @@ import { X, HelpCircle } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
-export default function InstructionToAddNode() {
+export default function QuickGuide() {
   const [isClicked, setIsClicked] = useState<boolean>(false);
 
   const handleClick = () => {
@@ -14,11 +14,15 @@ export default function InstructionToAddNode() {
       {/* Quick Guide Button */}
       <button
         onClick={handleClick}
-        className="flex items-center cursor-pointer gap-2 px-3 py-1.5 bg-slate-500 text-white duration-150 transition hover:bg-slate-400 rounded-full shadow-lg hover:shadow-xl "
+        className="flex items-center cursor-pointer gap-2 text-slate-900 duration-150 transition  rounded-full "
         aria-label="Quick Guide"
+        title="Quick Guide"
       >
-        <HelpCircle size={20} />
-        <span className="font-semibold">Quick Guide</span>
+        <HelpCircle
+          size={24}
+          className=" bg-slate-900 text-white rounded-full"
+        />
+        Quick Guide
       </button>
 
       {/* Instruction Panel */}
@@ -34,6 +38,7 @@ export default function InstructionToAddNode() {
             <p className="font-medium text-yellow-800">
               To begin building your workflow:
             </p>
+
             <ol className="list-decimal list-inside mt-2 space-y-2 text-yellow-900">
               <li>
                 First, drag and drop your PDF file into the upload area{" "}

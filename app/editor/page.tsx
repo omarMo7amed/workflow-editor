@@ -1,18 +1,19 @@
 "use client";
 
-import InstructionToAddNode from "../src/_components/InstructionToAddNode";
 import InstructionField from "../src/_components/InstructionField";
 import TableOfContents from "../src/_hooks/useTableOfContents";
 import { FileUpload } from "../src/_components/FileUpload";
 import NodeControls from "../src/_components/NodeControls";
 import DefaultNodes from "../src/_components/DefaultNodes";
+import QuickGuide from "../src/_components/QuickGuide";
 import Inspector from "../src/_components/Instpector";
+import Analyze from "../src/_components/Analyze";
 import Button from "../src/_components/Button";
 import Nodes from "../src/_components/Nodes";
-import Editor from "./Editor";
 import Load from "../src/_components/Load";
 import Help from "../src/_components/Help";
-import Analyze from "../src/_components/Analyze";
+import Editor from "./Editor";
+import WorkflowInspector from "../src/_components/WorkflowInspector";
 
 export default function Page() {
   const handleFilesUpload = (files: File[]) => {
@@ -23,7 +24,7 @@ export default function Page() {
 
   return (
     <section className="grid grid-cols-[max-content_1fr_max-content] mx-auto">
-      <TableOfContents side={"left"} activeTab="Nodes">
+      <TableOfContents side={"right"} activeTab="Nodes">
         <TableOfContents.Head>
           <TableOfContents.NavItem>Nodes</TableOfContents.NavItem>
           <TableOfContents.NavItem>Inspector</TableOfContents.NavItem>
@@ -34,10 +35,12 @@ export default function Page() {
           <Nodes>
             <NodeControls />
             <DefaultNodes />
-            <InstructionToAddNode />
+            <QuickGuide />
           </Nodes>
 
-          <Inspector>c</Inspector>
+          <Inspector>
+            <WorkflowInspector />
+          </Inspector>
 
           <Help> help</Help>
         </TableOfContents.Body>
@@ -45,7 +48,7 @@ export default function Page() {
 
       <Editor />
 
-      <TableOfContents side={"right"} activeTab="Load">
+      <TableOfContents side={"left"} activeTab="Load">
         <TableOfContents.Head>
           <TableOfContents.NavItem>Load</TableOfContents.NavItem>
           <TableOfContents.NavItem>Analyze</TableOfContents.NavItem>

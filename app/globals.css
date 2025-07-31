@@ -2,6 +2,7 @@
 
 body {
   font-family: Arial, Helvetica, sans-serif;
+  box-sizing: border-box;
 }
 
 html {
@@ -20,4 +21,27 @@ textarea {
 
 .min-h-minus-header {
   min-height: calc(100vh - 73px);
+}
+
+@keyframes dash {
+  to {
+    stroke-dashoffset: -10;
+  }
+}
+
+.react-flow__connection-line {
+  animation: dash 1s linear infinite;
+}
+
+.react-flow__edge path {
+  transition: stroke-width 0.2s ease-in-out;
+}
+
+.react-flow__edge:hover path {
+  stroke-width: 4 !important;
+}
+
+.react-flow__edge.selected path {
+  stroke-width: 4 !important;
+  filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.4));
 }

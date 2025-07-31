@@ -108,7 +108,7 @@ export function FileUpload({
 
         <div className="mt-2.5">
           <p className="text-sm text-gray-600">
-            <span className="font-semibold text-blue-600 hover:text-blue-500">
+            <span className="font-semibold text-amber-700 hover:text-amber-600">
               Click to upload
             </span>{" "}
             or drag and drop
