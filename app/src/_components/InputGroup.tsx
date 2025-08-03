@@ -35,7 +35,7 @@ export default function InputGroup({
         className={`w-full border-2 p-1.5 border-gray-300 rounded-xl ${
           readOnly
             ? "bg-gray-200"
-            : "focus:ring-gray-400 focus:ring-2 focus:border-none focus:outline-none focus:ring-offset-2 transition duration-150 placeholder-gray-400 focus:shadow-lg focus:shadow-gray-200/30"
+            : "focus:ring-gray-400 focus:ring-2 focus:border-none focus:outline-none focus:ring-offset-1 transition duration-150 placeholder-gray-400 focus:shadow-lg focus:shadow-gray-200/30"
         } `}
         {...props}
       />

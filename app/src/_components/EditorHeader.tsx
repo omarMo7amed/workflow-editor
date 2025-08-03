@@ -1,9 +1,11 @@
 import { ChevronLeft, Save } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Button from "./Button";
+import { useFlowStore } from "@/app/_store/flowStore";
 
 export default function EditorHeader() {
   const router = useRouter();
+  const { clearWorkflow } = useFlowStore();
 
   return (
     <div className="flex items-center justify-between">
@@ -33,7 +35,11 @@ export default function EditorHeader() {
       </div>
 
       <div className="flex gap-3">
-        <Button degree="secondary" extraStyle="rounded-md">
+        <Button
+          degree="secondary"
+          onClick={clearWorkflow}
+          extraStyle="rounded-md"
+        >
           Discard
         </Button>
 

@@ -4,6 +4,7 @@ import { Upload } from "lucide-react";
 import { FileUploadProps } from "../_types/types";
 import UploadFiles from "./UploadFilesList";
 import toast from "react-hot-toast";
+const MAX_TOTAL_FILES = 5;
 
 export function FileUpload({
   onFilesUpload,
@@ -11,8 +12,6 @@ export function FileUpload({
   maxFileSize = 10,
   multiple = true,
 }: FileUploadProps) {
-  const MAX_TOTAL_FILES = 5;
-
   const [isDragOver, setIsDragOver] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const uploadedKeys = useRef<Set<string>>(new Set());
@@ -108,7 +107,7 @@ export function FileUpload({
 
         <div className="mt-2.5">
           <p className="text-sm text-gray-600">
-            <span className="font-semibold text-amber-700 hover:text-amber-600">
+            <span className="font-semibold text-blue-600 hover:text-blue-500">
               Click to upload
             </span>{" "}
             or drag and drop

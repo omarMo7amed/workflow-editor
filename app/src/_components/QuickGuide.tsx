@@ -19,8 +19,8 @@ export default function QuickGuide() {
         title="Quick Guide"
       >
         <HelpCircle
-          size={24}
-          className=" bg-slate-900 text-white rounded-full"
+          size={20}
+          className=" bg-slate-900 text-xs text-white rounded-full"
         />
         Quick Guide
       </button>

@@ -1,7 +1,7 @@
 "use client";
 
 import InstructionField from "../src/_components/InstructionField";
-import TableOfContents from "../src/_hooks/useTableOfContents";
+import TableOfContents from "../src/context/TableOfContents";
 import { FileUpload } from "../src/_components/FileUpload";
 import NodeControls from "../src/_components/NodeControls";
 import DefaultNodes from "../src/_components/DefaultNodes";
@@ -24,31 +24,7 @@ export default function Page() {
 
   return (
     <section className="grid grid-cols-[max-content_1fr_max-content] mx-auto">
-      <TableOfContents side={"right"} activeTab="Nodes">
-        <TableOfContents.Head>
-          <TableOfContents.NavItem>Nodes</TableOfContents.NavItem>
-          <TableOfContents.NavItem>Inspector</TableOfContents.NavItem>
-          <TableOfContents.NavItem>Help</TableOfContents.NavItem>
-        </TableOfContents.Head>
-
-        <TableOfContents.Body>
-          <Nodes>
-            <NodeControls />
-            <DefaultNodes />
-            <QuickGuide />
-          </Nodes>
-
-          <Inspector>
-            <WorkflowInspector />
-          </Inspector>
-
-          <Help> help</Help>
-        </TableOfContents.Body>
-      </TableOfContents>
-
-      <Editor />
-
-      <TableOfContents side={"left"} activeTab="Load">
+      <TableOfContents side="left" activeTab="Load">
         <TableOfContents.Head>
           <TableOfContents.NavItem>Load</TableOfContents.NavItem>
           <TableOfContents.NavItem>Analyze</TableOfContents.NavItem>
@@ -71,6 +47,30 @@ export default function Page() {
           </Load>
 
           <Analyze>Soon</Analyze>
+        </TableOfContents.Body>
+      </TableOfContents>
+
+      <Editor />
+
+      <TableOfContents side="right" activeTab="Nodes">
+        <TableOfContents.Head>
+          <TableOfContents.NavItem>Nodes</TableOfContents.NavItem>
+          <TableOfContents.NavItem>Inspector</TableOfContents.NavItem>
+          <TableOfContents.NavItem>Help</TableOfContents.NavItem>
+        </TableOfContents.Head>
+
+        <TableOfContents.Body>
+          <Nodes>
+            <NodeControls />
+            <DefaultNodes />
+            <QuickGuide />
+          </Nodes>
+
+          <Inspector>
+            <WorkflowInspector />
+          </Inspector>
+
+          <Help> help</Help>
         </TableOfContents.Body>
       </TableOfContents>
     </section>

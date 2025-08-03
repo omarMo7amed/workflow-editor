@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { useTableOfContentsContext } from "../_hooks/useTableOfContents";
+import { useTableOfContentsContext } from "../context/TableOfContents";
 
 export default function Nodes({ children }: { children: ReactNode }) {
   const { active } = useTableOfContentsContext();

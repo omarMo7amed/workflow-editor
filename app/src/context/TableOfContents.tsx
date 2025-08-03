@@ -18,11 +18,13 @@ export default function TableOfContents({
 }: TableOfContentsProps) {
   const [active, setActive] = useState<string | undefined>(activeTab);
 
+  console.log(side);
+
   return (
     <TableOfContentsContext.Provider value={{ active, setActive }}>
       <aside
         className={`hidden md:block relative ${
-          side !== "right" ? "left-0 border-r" : "border-l right-0"
+          side !== "right" ? " left-0 border-r " : " border-l right-0 "
         } w-74 h-[calc(100vh-73px)] overflow-y-auto bg-white border-l border-gray-200 z-40 shadow-md space-y-1`}
       >
         {children}

@@ -9,15 +9,15 @@ export default function EditorSubHeader({
     <motion.div
       initial={{ opacity: 0, translateY: -20 }}
       animate={{ opacity: 1, translateY: 0 }}
-      className="absolute top-0 left-0 w-full flex justify-center z-50"
+      className="absolute top-0 left-1/2 -translate-x-1/2  flex justify-center z-50"
     >
-      <div className="flex items-center w-fit justify-center gap-2 p-1.5 bg-slate-300/30 backdrop-blur-md rounded-md shadow-xl">
+      <div className="flex items-center  justify-center gap-2 p-1.5 bg-slate-300/30 backdrop-blur-md rounded-md shadow-xl">
         <button
           onClick={() => onActiveTab("Editor")}
           className={`text-xs font-medium  cursor-pointer px-3 py-1 rounded-md  ${
             activeTab === "Editor"
               ? "bg-slate-700 text-slate-100 font-semibold "
-              : "hover:text-amber-700 text-slate-700 "
+              : "hover:text-blue-600 text-slate-700 "
           }    duration-200 tracking-wide`}
         >
           Editor
@@ -28,7 +28,7 @@ export default function EditorSubHeader({
           className={`text-xs font-medium text-slate-100 cursor-pointer px-3 py-1 rounded-md ${
             activeTab === "Executor"
               ? "bg-slate-700 text-slate-100 font-semibold"
-              : "hover:text-amber-700 text-slate-700 "
+              : "hover:text-blue-600 text-slate-700 "
           }    duration-200 tracking-wide`}
         >
           Executor

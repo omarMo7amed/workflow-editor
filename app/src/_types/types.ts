@@ -1,5 +1,6 @@
 import { LucideIcon } from "lucide-react";
 import { ReactNode } from "react";
+import { OnEdgesChange, OnNodesChange } from "reactflow";
 
 export interface Node {
   id: number;
@@ -73,7 +74,7 @@ export type StepProps = {
   length: number;
 };
 
-export type NodeType = "readPdf" | "summarize" | "sendEmail" | "report";
+export type NodeType = "readFile" | "summarize" | "email" | "report" | "note";
 
 export interface Edge {
   id: string;
@@ -125,4 +126,52 @@ export interface SearchFieldProps {
 export interface EditorSubHeaderPorps {
   activeTab: string;
   onActiveTab: (tab: string) => void;
+}
+
+export type availableNodeType = {
+  type: NodeType;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+};
+
+export interface ContextMenu<T> {
+  position: { x: number; y: number };
+  item: T;
+}
+
+export interface FlowState {
+  nodeMap: Map<string, Node>;
+  edgeMap: Map<string, Edge>;
+  nodeIdCounter: number;
+  labelCounters: Record<string, number>;
+  editingNode: Node | null;
+  nodeContext: ContextMenu<Node> | null;
+  edgeContext: ContextMenu<Edge> | null;
+
+  onNodesChange: OnNodesChange;
+  onEdgesChange: OnEdgesChange;
+
+  getNodes: () => Node[];
+  getEdges: () => Edge[];
+  getCurrentNode: (id: string) => Node | undefined;
+
+  addNode: (
+    type: NodeType,
+    label?: string,
+    position?: { x: number; y: number }
+  ) => void;
+  addEdge: (edge: Edge) => void;
+  // addNote: (type: string, label?: string) => void;
+  deleteNode: (id: string) => void;
+  deleteEdge: (id: string) => void;
+  duplicateNode: (node: Node) => void;
+  editNode: (id: string, label: string, type: string) => void;
+  changeEdgeType: (id: string, type: string) => void;
+  toggleEdgeLabel: (id: string) => void;
+
+  setEditingNode: (node: Node | null) => void;
+  setNodeContext: (context: ContextMenu<Node>) => void;
+  setEdgeContext: (context: ContextMenu<Edge>) => void;
+  clearContexts: () => void;
+  clearWorkflow: () => void;
 }

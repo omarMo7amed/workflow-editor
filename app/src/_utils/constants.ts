@@ -1,10 +1,12 @@
-import { Brain, FileText, Mail } from "lucide-react";
+import { BarChart, BookOpen, Brain, FileText, Mail } from "lucide-react";
 import {
+  availableNodeType,
   DevObjective,
   docsNavigationItems as NavigationItems,
   PortfolioValueCardProps,
   TechnologiesTypes,
 } from "../_types/types";
+import { Edge, Node } from "reactflow";
 
 export const docsNavigationItems: NavigationItems[] = [
   { id: "overview", title: "Overview", level: 1 },
@@ -149,3 +151,30 @@ export const flowDemoSteps = [
   { icon: Brain, label: "AI Process", color: "bg-slate-700" },
   { icon: Mail, label: "Send Email", color: "bg-slate-800" },
 ];
+
+export const availableNodes: availableNodeType[] = [
+  { type: "readFile", label: "Read File", icon: FileText },
+  { type: "email", label: "Send Email", icon: Mail },
+  { type: "report", label: "Report", icon: BarChart },
+  { type: "summarize", label: "Summarize", icon: BookOpen },
+];
+
+export const initialNodes: Node[] = [
+  {
+    id: "0",
+    type: "start",
+    position: { x: 150, y: 100 },
+    data: { label: "Start", type: "start", id: "0" },
+  },
+];
+
+export const initialNotes = [
+  {
+    id: "0",
+    type: "start",
+    position: { x: 150, y: 100 },
+    data: { label: "Start", type: "start", id: "0" },
+  },
+];
+
+export const initialEdges: Edge[] = [];
