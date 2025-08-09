@@ -1,6 +1,6 @@
 import { LucideIcon } from "lucide-react";
 import { ReactNode } from "react";
-import { OnEdgesChange, OnNodesChange } from "reactflow";
+import { Node as FlowNode } from "reactflow";
 
 export interface Node {
   id: number;
@@ -76,35 +76,9 @@ export type StepProps = {
 
 export type NodeType = "readFile" | "summarize" | "email" | "report" | "note";
 
-export interface Edge {
-  id: string;
-  source: string;
-  target: string;
-}
-
-export interface WorkflowNode {
-  id: string;
-  type: NodeType;
-  position: { x: number; y: number };
-  data: {
-    label: string;
-    input?: unknown;
-    output?: unknown;
-    config?: Record<string, unknown>;
-  };
-}
-
-export interface Workflow {
-  id: string;
-  name: string;
-  createdAt: string;
-  nodes: WorkflowNode[];
-  edges: Edge[];
-}
-
 export interface FileUploadProps {
   onFilesUpload?: (files: File[]) => void;
-  acceptedFileTypes?: string;
+  acceptedFileType?: string;
   maxFileSize?: number;
   multiple?: boolean;
 }
@@ -139,39 +113,22 @@ export interface ContextMenu<T> {
   item: T;
 }
 
-export interface FlowState {
-  nodeMap: Map<string, Node>;
-  edgeMap: Map<string, Edge>;
-  nodeIdCounter: number;
-  labelCounters: Record<string, number>;
-  editingNode: Node | null;
-  nodeContext: ContextMenu<Node> | null;
-  edgeContext: ContextMenu<Edge> | null;
+export type State = {
+  label: string;
+  reportFormat: string;
+  email: string;
+  choosedFile: string;
+  description: string;
+  hasChanges: boolean;
+  removeFile: boolean;
+};
 
-  onNodesChange: OnNodesChange;
-  onEdgesChange: OnEdgesChange;
-
-  getNodes: () => Node[];
-  getEdges: () => Edge[];
-  getCurrentNode: (id: string) => Node | undefined;
-
-  addNode: (
-    type: NodeType,
-    label?: string,
-    position?: { x: number; y: number }
-  ) => void;
-  addEdge: (edge: Edge) => void;
-  // addNote: (type: string, label?: string) => void;
-  deleteNode: (id: string) => void;
-  deleteEdge: (id: string) => void;
-  duplicateNode: (node: Node) => void;
-  editNode: (id: string, label: string, type: string) => void;
-  changeEdgeType: (id: string, type: string) => void;
-  toggleEdgeLabel: (id: string) => void;
-
-  setEditingNode: (node: Node | null) => void;
-  setNodeContext: (context: ContextMenu<Node>) => void;
-  setEdgeContext: (context: ContextMenu<Edge>) => void;
-  clearContexts: () => void;
-  clearWorkflow: () => void;
-}
+export type Action =
+  | { type: "ready"; payload: FlowNode | undefined }
+  | { type: "setLabel"; payload: string }
+  | { type: "setDescription"; payload: string }
+  | { type: "setReportFormat"; payload: string }
+  | { type: "setEmail"; payload: string }
+  | { type: "setChoosedFile"; payload: string }
+  | { type: "removeChoosedFile" }
+  | { type: "reset"; payload: FlowNode | undefined };

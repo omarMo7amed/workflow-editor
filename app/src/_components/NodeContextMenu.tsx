@@ -1,57 +1,74 @@
-import { Copy, Edit3, X } from "lucide-react";
+import { Copy, Edit3, Settings, Trash } from "lucide-react";
 import { Node } from "reactflow";
+import useActiveTabs from "../context/ActiveTabsContext";
 
 export const NodeContextMenu = ({
   node,
-  onEdit,
   onDuplicate,
   onDelete,
+  onEdit,
   onClose,
   position,
 }: {
   node: Node;
-  onEdit: (node: Node) => void;
   onDuplicate: (node: Node) => void;
   onDelete: (nodeId: string) => void;
+  onEdit: (node: Node | null) => void;
   onClose: () => void;
   position: { x: number; y: number };
 }) => {
-  console.log(node);
+  const { setRight, setCurrentNodeId } = useActiveTabs();
+
+  if (node.type === "start") return null;
+
   return (
     <div
-      className="absolute z-50 bg-white rounded-lg shadow-xl border border-gray-200 py-2 min-w-[160px]"
+      className="absolute z-50  bg-white rounded-lg shadow-xl text-slate-700 border border-gray-200 min-w-[180px]"
       style={{ top: position.y, left: position.x }}
     >
+      {/* Edit Button */}
       <button
-        onClick={() => {
-          onEdit(node);
-          onClose();
-        }}
-        className="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center space-x-2 text-sm"
+        onClick={() => onEdit(node)}
+        className="flex items-center gap-2 px-2  py-3 cursor-pointer w-full text-left hover:bg-slate-100 transition-colors text-sm"
       >
-        <Edit3 className="w-4 h-4" />
-        <span>Edit Node</span>
+        <Edit3 className="w-4 h-4 " />
+        <span>Edit</span>
       </button>
+
       <button
         onClick={() => {
           onDuplicate(node);
           onClose();
         }}
-        className="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center space-x-2 text-sm"
+        className="flex items-center gap-2 px-2  py-3 cursor-pointer w-full text-left hover:bg-slate-100  transition-colors text-sm"
       >
-        <Copy className="w-4 h-4" />
+        <Copy className="w-4 h-4 text-green-400" />
         <span>Duplicate</span>
       </button>
-      <hr className="my-1" />
+
+      <button
+        onClick={() => {
+          setRight("Inspector");
+          setCurrentNodeId(node.id);
+          onClose();
+        }}
+        className="flex items-center gap-2 px-2  py-3 cursor-pointer w-full text-left hover:bg-slate-100  transition-colors text-sm"
+      >
+        <Settings className="w-4 h-4 text-blue-400" />
+        <span>Settings</span>
+      </button>
+
+      <div className="border-t border-gray-200"></div>
+
       <button
         onClick={() => {
           onDelete(node.id);
           onClose();
         }}
-        className="w-full px-4 py-2 text-left hover:bg-red-50 flex items-center space-x-2 text-sm text-red-600"
+        className="flex items-center gap-2 px-2  py-3 cursor-pointer w-full text-left hover:bg-slate-100  transition-colors text-sm "
       >
-        <X className="w-4 h-4" />
-        <span>Delete Node</span>
+        <Trash className="w-4 h-4 text-red-600" />
+        <span>Delete</span>
       </button>
     </div>
   );

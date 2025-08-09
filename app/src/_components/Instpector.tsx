@@ -1,9 +1,11 @@
 import { ReactNode } from "react";
-import { useTableOfContentsContext } from "../context/TableOfContents";
+
+import useActiveInspector from "../context/ActiveTabsContext";
 
 export default function Inspector({ children }: { children: ReactNode }) {
-  const { active } = useTableOfContentsContext();
+  const { right } = useActiveInspector();
 
-  if (active !== "Inspector") return;
+  if (right !== "Inspector") return;
+
   return <div>{children}</div>;
 }

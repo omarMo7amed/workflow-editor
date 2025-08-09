@@ -1,10 +1,9 @@
 import { useFlowStore } from "@/app/_store/flowStore";
 import { FileText, BookOpen, Mail, BarChart, Plus } from "lucide-react";
-
-export type NodeType = "readFile" | "summarize" | "email" | "report";
+import { NodeType } from "../_types/types";
 
 interface DefaultNode {
-  type: NodeType;
+  type: Exclude<NodeType, "note">;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
   color: string;
@@ -33,7 +32,7 @@ const defaultNodes: DefaultNode[] = [
 ];
 
 export default function DefaultNodes() {
-  const { addNode } = useFlowStore();
+  const { addNode, openModal } = useFlowStore();
 
   return (
     <div className="space-y-3">
@@ -56,7 +55,10 @@ export default function DefaultNodes() {
               <span>{node.label}</span>
             </div>
             <button
-              onClick={() => addNode(node.type)}
+              onClick={() => {
+                if (node.label === "Send Email") openModal(node.label);
+                addNode(node.type, node.label);
+              }}
               className={`p-1 text-slate-600 hover:scale-130 hover:text-opacity-80 cursor-pointer`}
               title={`Add ${node.label}`}
             >

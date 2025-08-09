@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useOutsideClick } from "../_hooks/useOutSideClick";
 
 interface Option {
@@ -11,7 +11,8 @@ interface SelectionInputProps extends React.HTMLAttributes<HTMLDivElement> {
   label?: string;
   options: Option[];
   className?: string;
-  defaultValue?: string;
+  value?: string;
+  onSelectChange?: (value: string) => void;
 }
 
 export default function SelectionInput({
@@ -19,15 +20,15 @@ export default function SelectionInput({
   label,
   options,
   className = "",
-  defaultValue = "",
+  value = "",
+  onSelectChange,
   ...props
 }: SelectionInputProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedOption, setSelectedOption] = useState<string>(defaultValue);
+  const [selectedOption, setSelectedOption] = useState<string>(value);
   const ref = useOutsideClick<HTMLDivElement>(() => setIsOpen(false));
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    console.log(e.key);
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
       setIsOpen(!isOpen);
@@ -36,8 +37,13 @@ export default function SelectionInput({
     }
   };
 
+  useEffect(() => {
+    setSelectedOption(value);
+  }, [value]);
+
   const handleOptionClick = (value: string) => {
     setSelectedOption(value);
+    onSelectChange?.(value);
     setIsOpen(false);
   };
 
@@ -55,6 +61,7 @@ export default function SelectionInput({
           {label}
         </label>
       )}
+
       <div className="relative" ref={ref}>
         <div
           id={id}
@@ -84,15 +91,15 @@ export default function SelectionInput({
             />
           </svg>
         </div>
-        {isOpen && (
+        {isOpen && options.length !== 0 && (
           <ul
             id={`${id}-listbox`}
             role="listbox"
-            className="absolute w-full mt-2 border-2 border-gray-300 rounded-xl bg-white shadow-lg shadow-gray-200/50 max-h-60 overflow-y-auto z-10 animate-dropdown"
+            className="absolute w-full mt-2 border-2 border-gray-300 rounded-xl bg-white shadow-lg shadow-gray-200/50 max-h-44 overflow-y-auto z-10 animate-dropdown"
           >
             {options.map((option) => (
               <li
-                key={option.value}
+                key={option.label}
                 role="option"
                 aria-selected={selectedOption === option.value}
                 className={`p-2.5 text-gray-600 hover:bg-gray-100 cursor-pointer transition-colors duration-150 ${
@@ -107,6 +114,9 @@ export default function SelectionInput({
               </li>
             ))}
           </ul>
+        )}
+        {isOpen && options.length === 0 && (
+          <p className="mt-2 ml-2 text-slate-700">No Options Available!</p>
         )}
       </div>
     </div>

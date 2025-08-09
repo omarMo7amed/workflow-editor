@@ -1,93 +1,62 @@
-import { FileText, Mail, BarChart3, FileEdit } from "lucide-react";
-import { Handle, Position } from "reactflow";
-import NodePanel from "./NodePanel";
-import { NodeType } from "../_types/types";
+import useActiveTabs from "../context/ActiveTabsContext";
 import { useFlowStore } from "@/app/_store/flowStore";
+import { nodeConfig } from "../_utils/constants";
+import { Handle, Position } from "reactflow";
+import { NodeType } from "../_types/types";
+import NodePanel from "./NodePanel";
 
 interface CustomNodeProps {
-  data: { label: string; type: NodeType; fileName?: string; id: string };
+  data: {
+    label: string;
+    type: Exclude<NodeType, "note">;
+    id: string;
+    description?: string;
+    choosedFile?: string;
+    extractedText?: string;
+    reportFormat?: string;
+    status: "idle" | "excute" | "finish" | "error";
+  };
   selected: boolean;
 }
 
-const nodeConfig = {
-  readFile: {
-    icon: FileText,
-    borderColor: "emerald",
-    bgGradient: "from-emerald-50 to-emerald-100",
-    hoverGradient: "from-emerald-100 to-emerald-200",
-    focusShadow: "rgba(16,185,129,0.4)",
-    iconColor: "text-emerald-500",
-    handleColor: "bg-emerald-500",
-    receptorColor: "rgba(16,185,129,1)",
-    textColor: "text-gray-600",
-  },
-  email: {
-    icon: Mail,
-    borderColor: "slate",
-    bgGradient: "from-slate-200 to-slate-100",
-    hoverGradient: "from-slate-100 to-slate-200",
-    focusShadow: "rgba(71,85,105,0.3)",
-    iconColor: "text-slate-600",
-    handleColor: "bg-slate-600",
-    receptorColor: "rgba(71,85,105,1)",
-    textColor: "text-slate-700",
-  },
-  report: {
-    icon: BarChart3,
-    borderColor: "blue",
-    bgGradient: "from-blue-50 to-slate-50",
-    hoverGradient: "from-slate-50 to-blue-50",
-    focusShadow: "rgba(59,130,246,0.3)",
-    iconColor: "text-blue-700",
-    handleColor: "bg-blue-600",
-    receptorColor: "rgba(59,130,246,1)",
-    textColor: "text-slate-700",
-  },
-  summarize: {
-    icon: FileEdit,
-    borderColor: "amber",
-    bgGradient: "from-amber-50 to-amber-100",
-    hoverGradient: "from-amber-100 to-amber-200",
-    focusShadow: "rgba(245,158,11,0.4)",
-    iconColor: "text-amber-500",
-    handleColor: "bg-amber-500",
-    receptorColor: "rgba(245,158,11,1)",
-    textColor: "text-gray-600",
-  },
-};
-
 export default function CustomNode({ data, selected }: CustomNodeProps) {
-  const { duplicateNode, deleteNode, getCurrentNode } = useFlowStore();
+  const { duplicateNode, deleteNode, getCurrentNode, setEditingNode } =
+    useFlowStore();
+
+  const { setRight, setCurrentNodeId } = useActiveTabs();
+  const node = getCurrentNode(data.id);
 
   const config = nodeConfig[data.type] || nodeConfig.readFile;
   const Icon = config.icon;
 
-  const node = getCurrentNode(data.id);
-  console.log("id", node?.data.id);
-  console.log(node);
-
   return (
-    <div className="group relative">
+    <div
+      className="group relative"
+      onDoubleClick={() => {
+        setRight("Inspector");
+        setCurrentNodeId(data.id);
+      }}
+      onKeyDown={(e) => {
+        if (e.code === "Delete") deleteNode(data.id);
+      }}
+      title={`${data.choosedFile || "No File Assigned Yet"}`}
+    >
       <NodePanel
         node={node!}
         onDuplicate={duplicateNode}
-        // onEdit={editNode}
+        onEdit={setEditingNode}
         onDelete={deleteNode}
       />
 
       <div
         tabIndex={0}
         className={`rounded-2xl border-2 transition-all duration-200 outline-none
-          ${
-            selected
-              ? `border-${config.borderColor}-600`
-              : `border-${config.borderColor}-400`
-          }
-          bg-gradient-to-br ${config.bgGradient}
-          hover:${config.hoverGradient}
-          hover:shadow-lg hover:border-${config.borderColor}-400
-          focus:shadow-[0_0_0_6px_${config.focusShadow}]
-          px-4 py-4`}
+    ${selected ? config.borderClass.selected : config.borderClass.default}
+    bg-gradient-to-br ${config.bgGradient}
+    ${config.hoverGradient}
+    ${config.borderClass.hover}
+    ${config.focusShadow}
+    px-4 py-4`}
       >
         <div className="flex p-2 items-center">
           <Icon size={44} className={config.iconColor} />

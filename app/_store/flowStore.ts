@@ -11,12 +11,9 @@ import {
   OnNodesChange,
 } from "reactflow";
 import { NodeType } from "../src/_types/types";
-import { getInitialState } from "../src/_utils/helper";
-import {
-  initialEdges,
-  initialNodes,
-  initialNotes,
-} from "../src/_utils/constants";
+import { calcCoordinatesOfNode, getInitialState } from "../src/_utils/helper";
+import { initialEdges, initialNodes } from "../src/_utils/constants";
+import toast from "react-hot-toast";
 
 interface ContextMenu<T> {
   position: { x: number; y: number };
@@ -27,9 +24,11 @@ interface FlowState {
   nodeMap: Map<string, Node>;
   edgeMap: Map<string, Edge>;
   nodeIdCounter: number;
+  uploadedFiles: File[];
   noteIdCounter: number;
+  reservedFilesByNode: Map<string, string>;
+  reservedFilesByFile: Map<string, string>;
   labelCounters: Record<string, number>;
-  noteCounters: Record<string, number>;
   editingNode: Node | null;
   nodeContext: ContextMenu<Node> | null;
   edgeContext: ContextMenu<Edge> | null;
@@ -39,41 +38,45 @@ interface FlowState {
 
   getNodes: () => Node[];
   getEdges: () => Edge[];
-  getCurrentNode: (id: string) => Node | undefined;
+  getCurrentNode: (id?: string) => Node | undefined;
 
   addNode: (
     type: NodeType,
-    label?: string,
+    label: string,
     position?: { x: number; y: number }
   ) => void;
   addEdge: (edge: Edge) => void;
   deleteNode: (id: string) => void;
   deleteEdge: (id: string) => void;
   duplicateNode: (node: Node) => void;
-  editNode: (id: string, label: string, type: string) => void;
+  editNode: (id: string, newData: Partial<Node["data"]>) => void;
   changeEdgeType: (id: string, type: string) => void;
   toggleEdgeLabel: (id: string) => void;
 
-  addNote: (label?: string) => void;
-  editNote: (noteId: string, label?: string, description?: string) => void;
-  deleteNote: (noteId: string) => void;
+  setUploadedFiles: (files: File[]) => void;
 
   setEditingNode: (node: Node | null) => void;
   setNodeContext: (context: ContextMenu<Node>) => void;
   setEdgeContext: (context: ContextMenu<Edge>) => void;
   clearContexts: () => void;
   clearWorkflow: () => void;
+
+  modal: {
+    isOpen: boolean;
+    content: string | null;
+  };
+
+  openModal: (content: string) => void;
+  closeModal: () => void;
 }
 
 export const useFlowStore = create<FlowState>((set, get) => {
   const nodeMap = new Map(initialNodes.map((n) => [n.id, n]));
   const edgeMap = new Map(initialEdges.map((e) => [e.id, e]));
-  const noteMap = new Map(initialNotes.map((e) => [e.id, e]));
 
   return {
     nodeMap,
     edgeMap,
-    noteMap,
     ...getInitialState(),
 
     onNodesChange: (changes) => {
@@ -94,91 +97,136 @@ export const useFlowStore = create<FlowState>((set, get) => {
     getEdges: () => Array.from(get().edgeMap.values()),
 
     addNode: (type, label, position) => {
-      set((state) => {
-        const id = state.nodeIdCounter.toString();
-        const count = state.labelCounters?.[type] || 1;
+      try {
+        set((state) => {
+          const isNote = type === "note";
+          const id = isNote
+            ? `note-${state.noteIdCounter}`
+            : `node-${state.nodeIdCounter}`;
 
-        const labelBase =
-          label ||
-          {
-            readFile: "Read File",
-            summarize: "Summarize",
-            email: "Send Email",
-            report: "Generate Report",
-            start: "Start",
-            note: "Note",
-          }[type] ||
-          type;
+          console.log("from add Node", state.editingNode);
 
-        const newLabel = `${labelBase} ${count <= 1 ? "" : count}`;
+          const count = (state.labelCounters?.[label] || 0) + 1;
+          const newLabel = `${label} ${count === 1 ? "" : count}`;
 
-        const newNode: Node = {
-          id,
-          type,
-          position: position || {
-            x: Math.random() * 400 + 100,
-            y: Math.random() * 300 + 100,
-          },
-          data: { id, label: newLabel, type },
-        };
-
-        state.nodeMap.set(id, newNode);
-        return {
-          nodeMap: new Map(state.nodeMap),
-          nodeIdCounter: state.nodeIdCounter + 1,
-          labelCounters: {
+          const newLabelCounters = {
             ...state.labelCounters,
-            [type]: count + 1,
-          },
-        };
-      });
+            [label]: count,
+          };
+
+          const coords =
+            position ||
+            calcCoordinatesOfNode(
+              isNote ? state.noteIdCounter : state.nodeIdCounter,
+              type
+            );
+
+          const newNode: Node = {
+            id,
+            type,
+            position: coords,
+            data: {
+              id,
+              label: newLabel,
+              type,
+              description: "",
+              choosedFile: "",
+              extractedText: "",
+              reportFormat: "PDF",
+              status: "idle",
+            },
+          };
+
+          const newNodeMap = new Map(state.nodeMap);
+          newNodeMap.set(id, newNode);
+
+          toast.success(`${newLabel} added successfully!`);
+
+          return {
+            nodeMap: newNodeMap,
+            nodeIdCounter: isNote
+              ? state.nodeIdCounter
+              : state.nodeIdCounter + 1,
+            noteIdCounter: isNote
+              ? state.noteIdCounter + 1
+              : state.noteIdCounter,
+            labelCounters: newLabelCounters,
+          };
+        });
+      } catch (e) {
+        toast.error("Failed to add node");
+        console.error(e);
+      }
     },
 
-    // addNote: (label) => {
-    //   set((state) => {
-    //     const id = `note-${state.noteIdCounter}`;
-    //     const count = state.noteCounters?.[label] || 1;
+    deleteNode: (id) =>
+      set((state) => {
+        const node = state.nodeMap.get(id);
+        if (!node) return {};
 
-    //     const newLabel = `${label || "Note"} ${count <= 1 ? "" : count}`;
+        const isNote = node.type === "note";
 
-    //     const newNote: Node = {
-    //       id,
-    //       type: "note",
-    //       position: {
-    //         x: state.noteIdCounter * 300 + 100,
-    //         y: state.noteIdCounter * 200 + 100,
-    //       },
-    //       data: { id, label: newLabel, description: "" },
-    //     };
+        const newNodeMap = new Map(state.nodeMap);
+        newNodeMap.delete(id);
 
-    //     state.nodeMap.set(id, newNote);
-    //     return {
-    //       nodeMap: new Map(state.nodeMap),
-    //       noteIdCounter: state.noteIdCounter + 1,
-    //       noteCounters: {
-    //         ...state.noteCounters,
-    //         [label]: count + 1,
-    //       },
-    //     };
-    //   });
-    // },
+        const newEdgeMap = new Map(
+          Array.from(state.edgeMap.values())
+            .filter((e) => e.source !== id && e.target !== id)
+            .map((e) => [e.id, e])
+        );
+
+        const match = node.data.label.match(/^(.*?)(?: \d+)?$/);
+        const baseLabel = match ? match[1] : node.data.label;
+
+        const newLabelCounters = {
+          ...state.labelCounters,
+        };
+
+        if (newLabelCounters[baseLabel]) {
+          newLabelCounters[baseLabel] = Math.max(
+            newLabelCounters[baseLabel] - 1,
+            0
+          );
+        }
+
+        return {
+          nodeMap: newNodeMap,
+          edgeMap: newEdgeMap,
+          nodeIdCounter: isNote ? state.nodeIdCounter : state.nodeIdCounter - 1,
+          noteIdCounter: isNote ? state.noteIdCounter - 1 : state.noteIdCounter,
+          labelCounters: newLabelCounters,
+        };
+      }),
+
+    editNode: (id, newData) => {
+      try {
+        set((state) => {
+          const node = state.nodeMap.get(id);
+
+          if (!node) return {};
+
+          const updatedNode = {
+            ...node,
+            data: { ...node.data, ...newData },
+          };
+
+          const newNodeMap = new Map(state.nodeMap);
+          newNodeMap.set(id, updatedNode);
+
+          if (node.type !== "note") toast.success("Node updated successfully!");
+
+          return { nodeMap: newNodeMap };
+        });
+      } catch (e) {
+        toast.error("Something is Wrong Try Again");
+        console.error("edit node", e);
+      }
+    },
 
     addEdge: (edge) =>
       set((state) => {
         const newEdges = addEdge(edge, Array.from(state.edgeMap.values()));
         return { edgeMap: new Map(newEdges.map((e) => [e.id, e])) };
-      }),
-
-    deleteNode: (id) =>
-      set((state) => {
-        state.nodeMap.delete(id);
-        const filteredEdges = Array.from(state.edgeMap.values()).filter(
-          (e) => e.source !== id && e.target !== id
-        );
-        return {
-          nodeMap: new Map(state.nodeMap),
-          edgeMap: new Map(filteredEdges.map((e) => [e.id, e])),
-        };
       }),
 
     deleteEdge: (id) =>
@@ -188,19 +236,6 @@ export const useFlowStore = create<FlowState>((set, get) => {
       }),
 
     duplicateNode: (node) => get().addNode(node.data.type, node.data.label),
-
-    editNode: (id, label, type) =>
-      set((state) => {
-        const node = state.nodeMap.get(id);
-        if (!node) return {};
-        const updatedNode = {
-          ...node,
-          type,
-          data: { ...node.data, label, type },
-        };
-        state.nodeMap.set(id, updatedNode);
-        return { nodeMap: new Map(state.nodeMap) };
-      }),
 
     changeEdgeType: (id, newType) =>
       set((state) => {
@@ -230,25 +265,54 @@ export const useFlowStore = create<FlowState>((set, get) => {
         return { edgeMap: new Map(state.edgeMap) };
       }),
 
-    setEditingNode: (node) => set(() => ({ editingNode: node })),
+    setEditingNode: (node) => {
+      console.log("Editing node set to:", node);
 
-    getCurrentNode: (id: string) => get().nodeMap.get(id),
+      set({ editingNode: node });
+    },
+
+    getCurrentNode: (id?: string) => {
+      if (!id) return;
+      return get().nodeMap.get(id);
+    },
 
     setNodeContext: (context) =>
-      set(() => ({
-        nodeContext: { item: context.item, position: context.position },
-      })),
+      set(() => {
+        const { x, y } = context.position;
+        const position = {
+          x: x - 300,
+          y: y - 100,
+        };
+
+        return {
+          nodeContext: { item: context.item, position: position },
+        };
+      }),
 
     setEdgeContext: (context) =>
+      set(() => {
+        const { x, y } = context.position;
+        const position = {
+          x: x - 300,
+          y: y - 100,
+        };
+
+        return {
+          edgeContext: { item: context.item, position: position },
+        };
+      }),
+
+    setUploadedFiles: (files: File[]) =>
       set(() => ({
-        edgeContext: { item: context.item, position: context.position },
+        uploadedFiles: files,
       })),
 
     clearContexts: () =>
       set(() => ({ nodeContext: null, edgeContext: null, editingNode: null })),
 
     clearWorkflow: () => {
-      set(() => {
+      set((state) => {
+        console.log(state.uploadedFiles);
         return {
           nodeMap: new Map(initialNodes.map((node) => [node.id, node])),
           edgeMap: new Map(initialEdges.map((edge) => [edge.id, edge])),
@@ -257,5 +321,11 @@ export const useFlowStore = create<FlowState>((set, get) => {
         };
       });
     },
+
+    modal: { isOpen: false, content: null },
+
+    openModal: (content) => set(() => ({ modal: { isOpen: true, content } })),
+
+    closeModal: () => set(() => ({ modal: { isOpen: false, content: null } })),
   };
 });

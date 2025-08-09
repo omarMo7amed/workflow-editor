@@ -2,15 +2,15 @@ import { useState } from "react";
 import SearchField from "./SearchField";
 import { useFlowStore } from "@/app/_store/flowStore";
 import { useOutsideClick } from "../_hooks/useOutSideClick";
-import { availableNodes } from "../_utils/constants";
+import { nodeList } from "../_utils/constants";
 
 export default function NodeControls() {
-  const { addNode } = useFlowStore();
+  const { addNode, openModal } = useFlowStore();
   const [query, setQuery] = useState<string>("");
   const containerRef = useOutsideClick<HTMLDivElement>(() => setQuery(""));
 
   const filteredNodes = query
-    ? availableNodes.filter((node) =>
+    ? nodeList.filter((node) =>
         node.label.toLowerCase().includes(query.toLowerCase())
       )
     : [];
@@ -37,7 +37,8 @@ export default function NodeControls() {
                       key={node.type}
                       className="cursor-pointer w-full py-3 text-left hover:bg-gray-50 transition-colors duration-150 border-b border-gray-50 last:border-b-0 flex items-center space-x-3 px-4"
                       onClick={() => {
-                        addNode(node.type);
+                        openModal(node.label);
+                        addNode(node.type, node.label);
                         setQuery("");
                       }}
                     >

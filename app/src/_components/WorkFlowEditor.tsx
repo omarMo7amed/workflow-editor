@@ -20,13 +20,14 @@ import EditorSubHeader from "./EditorSubHeader";
 
 import { NodeContextMenu } from "./NodeContextMenu";
 import { EdgeContextMenu } from "./EdgeContextMenu";
-import { EditNodeModal } from "./EditNodeModal";
 
 import { useFlowStore } from "@/app/_store/flowStore";
 import CustomControls from "./CustomControl";
 import Toolbar from "./Toolbar";
 import { NodeType } from "../_types/types";
 import NoteNode from "./NoteNode";
+import { availableNodes } from "../_utils/constants";
+import { EditNodeModal } from "./EditNodeModal";
 
 const edgeTypes = {
   animated: CustomEdge,
@@ -52,7 +53,6 @@ export default function WorkflowEditor() {
     deleteNode,
     duplicateNode,
     deleteEdge,
-    editNode,
     addNode,
     changeEdgeType,
     toggleEdgeLabel,
@@ -60,12 +60,17 @@ export default function WorkflowEditor() {
     setEdgeContext,
     nodeContext,
     edgeContext,
-    editingNode,
     setEditingNode,
     clearContexts,
+
+    // modal,
+    // closeModal,
   } = useFlowStore();
   const [isLocked, setIsLocked] = useState<boolean>(false);
   const { project } = useReactFlow();
+
+  const editingNode = useFlowStore((s) => s.editingNode);
+
   // const [activeTab, setIsLocked] = useState<boolean>(false);
 
   const nodes = getNodes();
@@ -104,7 +109,7 @@ export default function WorkflowEditor() {
       y: e.clientY - bounds.top,
     });
 
-    addNode(type as NodeType, undefined, position);
+    addNode(type as NodeType, availableNodes[type as NodeType], position);
   }
 
   function handleDragOver(event: React.DragEvent) {
@@ -184,10 +189,20 @@ export default function WorkflowEditor() {
         <NodeContextMenu
           node={nodeContext.item}
           position={nodeContext.position}
-          onEdit={setEditingNode}
           onDuplicate={duplicateNode}
+          onEdit={setEditingNode}
           onDelete={deleteNode}
           onClose={clearContexts}
+        />
+      )}
+
+      {editingNode && (
+        <EditNodeModal
+          node={editingNode}
+          onClose={() => {
+            setEditingNode(null);
+            clearContexts();
+          }}
         />
       )}
 
@@ -199,14 +214,6 @@ export default function WorkflowEditor() {
           onToggleLabel={toggleEdgeLabel}
           onDelete={deleteEdge}
           onClose={clearContexts}
-        />
-      )}
-
-      {editingNode && (
-        <EditNodeModal
-          node={editingNode}
-          onSave={editNode}
-          onClose={() => setEditingNode(null)}
         />
       )}
 

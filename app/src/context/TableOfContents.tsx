@@ -1,12 +1,13 @@
 "use client";
 
-import { createContext, useContext, useState } from "react";
+import { createContext, Dispatch, useContext } from "react";
 import { ChildrenType, TableOfContentsProps } from "../_types/types";
+import useActiveInspector from "./ActiveTabsContext";
 
 const TableOfContentsContext = createContext<
   | {
-      active: string | undefined;
-      setActive: React.Dispatch<React.SetStateAction<string | undefined>>;
+      active: string;
+      setActive: Dispatch<React.SetStateAction<string>>;
     }
   | undefined
 >(undefined);
@@ -14,11 +15,11 @@ const TableOfContentsContext = createContext<
 export default function TableOfContents({
   side,
   children,
-  activeTab,
 }: TableOfContentsProps) {
-  const [active, setActive] = useState<string | undefined>(activeTab);
+  const { left, right, setLeft, setRight } = useActiveInspector();
 
-  console.log(side);
+  const active = side === "left" ? left : right;
+  const setActive = side === "left" ? setLeft : setRight;
 
   return (
     <TableOfContentsContext.Provider value={{ active, setActive }}>

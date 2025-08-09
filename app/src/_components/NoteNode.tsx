@@ -1,18 +1,28 @@
+import { useFlowStore } from "@/app/_store/flowStore";
 import { PencilIcon } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useInspectorReducer } from "../_hooks/useInspectorReducer";
+import { useNodeSave } from "../_hooks/useNodeSave";
 
 interface NoteNodeProps {
   data: {
+    id: string;
     label: string;
     description?: string;
   };
 }
 
 export default function NoteNode({ data }: NoteNodeProps) {
+  const { deleteNode, getCurrentNode } = useFlowStore();
   const [isEditingDescription, setIsEditingDescription] = useState(false);
   const [isEditingLabel, setIsEditingLabel] = useState(false);
-  const [description, setDescription] = useState(data.description || "");
-  const [label, setLabel] = useState(data.label || "Note");
+  const note = getCurrentNode(data.id);
+  const [state, dispatch] = useInspectorReducer(note);
+  const save = useNodeSave(note, state, dispatch);
+
+  useEffect(() => {
+    dispatch({ type: "ready", payload: note });
+  }, [note, dispatch]);
 
   return (
     <div
@@ -22,6 +32,9 @@ export default function NoteNode({ data }: NoteNodeProps) {
         w-48 h-32 p-3 flex flex-col
       `}
       role="button"
+      onKeyDown={(e) => {
+        if (e.code === "Delete") deleteNode(data.id);
+      }}
       tabIndex={0}
       aria-label="Note node"
     >
@@ -29,11 +42,19 @@ export default function NoteNode({ data }: NoteNodeProps) {
         {isEditingLabel ? (
           <input
             className="text-sm font-semibold text-gray-800 w-full bg-transparent border-b border-yellow-300 focus:outline-none"
-            value={label}
-            onChange={(e) => setLabel(e.target.value)}
-            onBlur={() => setIsEditingLabel(false)}
+            value={state.label}
+            onChange={(e) =>
+              dispatch({ type: "setLabel", payload: e.target.value })
+            }
+            onBlur={() => {
+              save();
+              setIsEditingLabel(false);
+            }}
             onKeyDown={(e) => {
-              if (e.key === "Enter") setIsEditingLabel(false);
+              if (e.key === "Enter") {
+                save();
+                setIsEditingLabel(false);
+              }
             }}
             autoFocus
           />
@@ -42,7 +63,7 @@ export default function NoteNode({ data }: NoteNodeProps) {
             className="text-sm font-semibold text-gray-800 truncate w-full"
             onClick={() => setIsEditingLabel(true)}
           >
-            {label}
+            {data.label || "note"}
           </h4>
         )}
 
@@ -56,9 +77,15 @@ export default function NoteNode({ data }: NoteNodeProps) {
       <div className="flex-1 overflow-hidden">
         {isEditingDescription ? (
           <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            onBlur={() => setIsEditingDescription(false)}
+            value={state.description}
+            onChange={(e) => {
+              console.log(state.description);
+              dispatch({ type: "setDescription", payload: e.target.value });
+            }}
+            onBlur={() => {
+              save();
+              setIsEditingDescription(false);
+            }}
             className="w-full h-full text-sm text-slate-900 bg-transparent focus:outline-none resize-none"
             autoFocus
             aria-label="Edit note content"
@@ -66,11 +93,11 @@ export default function NoteNode({ data }: NoteNodeProps) {
         ) : (
           <p
             className={`text-sm ${
-              description ? "text-slate-900" : "text-slate-500"
+              state.description ? "text-slate-900" : "text-slate-500"
             } whitespace-pre-wrap break-words  line-clamp-4`}
             onDoubleClick={() => setIsEditingDescription(true)}
           >
-            {description || "Double-click to add description"}
+            {state.description || "Double-click to add description"}
           </p>
         )}
       </div>

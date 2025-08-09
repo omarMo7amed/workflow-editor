@@ -1,10 +1,11 @@
-import { Copy, Pen, Trash } from "lucide-react";
+import { Copy, Pen, Settings, Trash } from "lucide-react";
 import { Node } from "reactflow";
+import useActiveTabs from "../context/ActiveTabsContext";
 
 interface NodePanelProps {
   node: Node;
   onDuplicate?: (node: Node) => void;
-  onEdit?: (id: string, label?: string, type?: string) => void;
+  onEdit?: (node: Node) => void;
   onDelete?: (id: string) => void;
 }
 
@@ -14,15 +15,20 @@ export default function NodePanel({
   onEdit,
   onDelete,
 }: NodePanelProps) {
+  const { setRight, setCurrentNodeId } = useActiveTabs();
+
   return (
-    <div className="bg-slate-300/50 backdrop-blur-md absolute left-0 p-2 rounded-xl -top-10 w-28 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out">
+    <div className="absolute left-0 pb-5 -top-7 w-24 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-out">
       <div className="flex justify-between items-center">
-        {/* <button
+        <button
           className="text-gray-600 cursor-pointer hover:text-blue-600 transition-colors duration-200"
-          onClick={(}
+          onClick={() => {
+            setRight("Inspector");
+            setCurrentNodeId(node.id);
+          }}
         >
           <Settings size={16} />
-        </button> */}
+        </button>
 
         <button
           className="text-gray-600 cursor-pointer hover:text-blue-600 transition-colors duration-200"
@@ -33,7 +39,7 @@ export default function NodePanel({
 
         <button
           className="text-gray-600 cursor-pointer hover:text-blue-600 transition-colors duration-200"
-          onClick={() => onEdit?.(node.data.id)}
+          onClick={() => onEdit?.(node)}
         >
           <Pen size={16} />
         </button>

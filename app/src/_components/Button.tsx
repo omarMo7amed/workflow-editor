@@ -4,6 +4,7 @@ interface ButtonProps {
   degree?: "main" | "secondary";
   extraStyle?: string;
   children: ReactNode;
+  disabled?: boolean;
   onClick?: (arg?: unknown) => void;
 }
 
@@ -11,6 +12,7 @@ export default function Button({
   degree = "main",
   extraStyle,
   children,
+  disabled = false,
   onClick,
 }: ButtonProps) {
   const baseStyles =
@@ -23,6 +25,7 @@ export default function Button({
 
   return (
     <button
+      disabled={disabled}
       className={`${baseStyles} ${degreeStyles[degree] || degreeStyles.main} ${
         extraStyle || ""
       }`}

@@ -1,15 +1,19 @@
 import { Plus, StickyNote } from "lucide-react";
 import { focusSearchInput } from "../_utils/helper";
 import { useFlowStore } from "@/app/_store/flowStore";
+import useActiveTabs from "../context/ActiveTabsContext";
 
 export default function Toolbar() {
-  //we have an error here don't forget
-  const { addNote } = useFlowStore();
+  const { addNode } = useFlowStore();
+  const { setRight } = useActiveTabs();
 
   return (
     <div className="absolute top-5 right-4 z-50">
       <button
-        onClick={focusSearchInput}
+        onClick={() => {
+          setRight("Nodes");
+          setTimeout(focusSearchInput, 0);
+        }}
         title="Add Node"
         className="p-3 w-full rounded-md bg-transparent cursor-pointer hover:bg-gray-200 transition-colors flex items-center justify-center focus:ring-offset-2 ring-2 ring-slate-300 focwhatus:ring-slate-400 mb-3"
         aria-label="add node"
@@ -18,7 +22,7 @@ export default function Toolbar() {
       </button>
 
       <button
-        onClick={() => addNote()}
+        onClick={() => addNode("note", "Note")}
         title="Write Note"
         className="p-3 w-full rounded-md bg-transparent cursor-pointer hover:bg-gray-200 transition-colors flex items-center justify-center focus:ring-offset-2 ring-2 ring-slate-300 focus:ring-slate-400"
         aria-label="write note"
