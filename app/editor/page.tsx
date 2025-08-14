@@ -1,5 +1,6 @@
 "use client";
 
+import AuthGuard from "@/components/AuthGuard";
 import { ActiveTabsContextProvider } from "../src/context/ActiveTabsContext";
 import WorkflowInspector from "../src/_components/WorkflowInspector";
 import InstructionField from "../src/_components/InstructionField";
@@ -25,6 +26,7 @@ export default function Page() {
   };
 
   return (
+    <AuthGuard>
     <section className="grid grid-cols-[max-content_1fr_max-content] mx-auto">
       <ActiveTabsContextProvider>
         <TableOfContents side="left" activeTab="Load">
@@ -78,5 +80,6 @@ export default function Page() {
         </TableOfContents>
       </ActiveTabsContextProvider>
     </section>
+    </AuthGuard>
   );
 }

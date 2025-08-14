@@ -1,6 +1,7 @@
 "use client";
 
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 import {
   addEdge,
   applyEdgeChanges,
@@ -14,6 +15,7 @@ import { NodeType } from "../src/_types/types";
 import { calcCoordinatesOfNode, getInitialState } from "../src/_utils/helper";
 import { initialEdges, initialNodes } from "../src/_utils/constants";
 import toast from "react-hot-toast";
+import { supabase } from "@/lib/supabase";
 
 interface ContextMenu<T> {
   position: { x: number; y: number };
@@ -70,7 +72,9 @@ interface FlowState {
   closeModal: () => void;
 }
 
-export const useFlowStore = create<FlowState>((set, get) => {
+export const useFlowStore = create<FlowState>()(
+  persist(
+    (set, get) => {
   const nodeMap = new Map(initialNodes.map((n) => [n.id, n]));
   const edgeMap = new Map(initialEdges.map((e) => [e.id, e]));
 
@@ -328,4 +332,24 @@ export const useFlowStore = create<FlowState>((set, get) => {
 
     closeModal: () => set(() => ({ modal: { isOpen: false, content: null } })),
   };
-});
+    },
+    {
+      name: 'workflow-storage',
+      partialize: (state) => ({
+        nodeMap: Array.from(state.nodeMap.entries()),
+        edgeMap: Array.from(state.edgeMap.entries()),
+        nodeIdCounter: state.nodeIdCounter,
+        noteIdCounter: state.noteIdCounter,
+        labelCounters: state.labelCounters,
+        uploadedFiles: state.uploadedFiles,
+      }),
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          // Convert arrays back to Maps
+          state.nodeMap = new Map(state.nodeMap as any);
+          state.edgeMap = new Map(state.edgeMap as any);
+        }
+      },
+    }
+  )
+);
