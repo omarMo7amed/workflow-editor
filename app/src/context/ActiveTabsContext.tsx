@@ -1,20 +1,5 @@
-import {
-  createContext,
-  Dispatch,
-  ReactNode,
-  SetStateAction,
-  useContext,
-  useState,
-} from "react";
-
-type ActiveTabsContextType = {
-  left: string;
-  right: string;
-  currentNodeId: string | undefined;
-  setCurrentNodeId: Dispatch<SetStateAction<string | undefined>>;
-  setLeft: Dispatch<SetStateAction<string>>;
-  setRight: Dispatch<SetStateAction<string>>;
-};
+import { createContext, ReactNode, useContext, useState } from "react";
+import { ActiveTabsContextType } from "../_types/types";
 
 const ActiveTabsContext = createContext<ActiveTabsContextType | undefined>(
   undefined

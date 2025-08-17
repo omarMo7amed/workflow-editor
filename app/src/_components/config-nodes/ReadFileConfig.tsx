@@ -19,8 +19,8 @@ export default function ReadFileConfig({
       <SelectionInput
         id="file-select"
         label="Choose File"
-        options={uploadedFiles.map((file: File) => ({
-          value: file.name,
+        options={uploadedFiles.map((file: File, index: number) => ({
+          value: String(index),
           label: file.name,
         }))}
         value={state.choosedFile || ""}

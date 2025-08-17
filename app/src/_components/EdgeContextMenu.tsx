@@ -1,5 +1,6 @@
-import { ArrowRight, Circle, Edit3, Trash, X } from "lucide-react";
+import { ArrowRight, Circle, Edit3, Trash } from "lucide-react";
 import { Edge } from "reactflow";
+import { EdgeType } from "../_types/types";
 
 export const EdgeContextMenu = ({
   edge,
@@ -10,7 +11,7 @@ export const EdgeContextMenu = ({
   position,
 }: {
   edge: Edge;
-  onChangeType: (edgeId: string, type: string) => void;
+  onChangeType: (edgeId: string, type: EdgeType) => void;
   onToggleLabel: (edgeId: string) => void;
   onDelete: (edgeId: string) => void;
   onClose: () => void;

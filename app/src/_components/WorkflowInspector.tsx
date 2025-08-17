@@ -106,7 +106,7 @@ export default function WorkflowInspector() {
             degree="main"
             onClick={save}
             disabled={!state.hasChanges}
-            extraStyle={`rounded-md disabled:bg-slate-300`}
+            extraStyle={`rounded-md disabled:bg-slate-600`}
           >
             Save Changes
           </Button>

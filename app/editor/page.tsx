@@ -10,22 +10,17 @@ import DefaultNodes from "../src/_components/DefaultNodes";
 import QuickGuide from "../src/_components/QuickGuide";
 import Inspector from "../src/_components/Instpector";
 import Analyze from "../src/_components/Analyze";
-import Button from "../src/_components/Button";
+import Nodes from "../src/_components/Nodes";
 import Load from "../src/_components/Load";
 import Help from "../src/_components/Help";
 import Editor from "./Editor";
-import Nodes from "../src/_components/Nodes";
-// import Nodes from "../src/context/NodesContext";
+import ProgressBar from "../src/_components/ProgressBar";
+import Logs from "../src/_components/Logs";
+import ExecutionStats from "../src/_components/ExecutionsStats";
 
 export default function Page() {
-  const handleFilesUpload = (files: File[]) => {
-    console.log("Files uploaded in TableOfContents:", files);
-    // Handle the uploaded files here
-    // You can pass this data up to parent components or process it as needed
-  };
-
   return (
-    <section className="grid grid-cols-[max-content_1fr_max-content] mx-auto">
+    <section className="flex min-h-[calc(100vh-73px)] w-full">
       <ActiveTabsContextProvider>
         <TableOfContents side="left" activeTab="Load">
           <TableOfContents.Head>
@@ -36,20 +31,19 @@ export default function Page() {
           <TableOfContents.Body>
             <Load>
               <FileUpload
-                onFilesUpload={handleFilesUpload}
                 acceptedFileType=".pdf,.doc,.docx,.txt"
                 maxFileSize={10}
                 multiple={true}
               />
 
               <InstructionField />
-
-              <Button degree="main" extraStyle="rounded-md">
-                Execute Workflow
-              </Button>
             </Load>
 
-            <Analyze>Soon</Analyze>
+            <Analyze>
+              <ProgressBar />
+              <ExecutionStats />
+              <Logs />
+            </Analyze>
           </TableOfContents.Body>
         </TableOfContents>
 

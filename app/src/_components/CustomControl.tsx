@@ -4,10 +4,12 @@ import { ZoomIn, ZoomOut, Maximize2, Lock, Unlock } from "lucide-react";
 
 type CustomControlsProps = {
   isLocked: boolean;
+  isEditor: boolean;
   setIsLocked: Dispatch<SetStateAction<boolean>>;
 };
 export default function CustomControls({
   isLocked,
+  isEditor,
   setIsLocked,
 }: CustomControlsProps) {
   const { zoomIn, zoomOut, fitView } = useReactFlow();
@@ -31,9 +33,9 @@ export default function CustomControls({
 
       <ControlButton
         title={isLocked ? "Unlock Interactions" : "Lock Interactions"}
-        onClick={() => setIsLocked((prev: boolean) => !prev)}
+        onClick={() => isEditor && setIsLocked((prev) => !prev)}
       >
-        {!isLocked ? <Unlock size={18} /> : <Lock size={18} />}
+        {isLocked ? <Lock size={18} /> : <Unlock size={18} />}
       </ControlButton>
     </div>
   );

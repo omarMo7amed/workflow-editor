@@ -1,6 +1,19 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { availableNodes, connectionRules } from "../src/_utils/constants";
+import { useCallback, useRef, useState } from "react";
+import { useFlowStore } from "@/app/_store/flowStore";
+import { EdgeContextMenu } from "../src/_components/EdgeContextMenu";
+import { NodeContextMenu } from "../src/_components/NodeContextMenu";
+import { EditNodeModal } from "../src/_components/EditNodeModal";
+import CustomControls from "../src/_components/CustomControl";
+import { NodeType } from "../src/_types/types";
+import CustomNode from "../src/_components/CustomNode";
+import CustomEdge from "../src/_components/CustomEdge";
+import StartNode from "../src/_components/StartNode";
+import toast from "react-hot-toast";
+import NoteNode from "../src/_components/NoteNode";
+import Toolbar from "../src/_components/Toolbar";
 import ReactFlow, {
   Background,
   MiniMap,
@@ -10,28 +23,15 @@ import ReactFlow, {
   Node,
   useReactFlow,
 } from "reactflow";
-
 import "reactflow/dist/style.css";
-
-import CustomNode from "./CustomNode";
-import CustomEdge from "./CustomEdge";
-import StartNode from "./StartNode";
-import EditorSubHeader from "./EditorSubHeader";
-
-import { NodeContextMenu } from "./NodeContextMenu";
-import { EdgeContextMenu } from "./EdgeContextMenu";
-
-import { useFlowStore } from "@/app/_store/flowStore";
-import CustomControls from "./CustomControl";
-import Toolbar from "./Toolbar";
-import { NodeType } from "../_types/types";
-import NoteNode from "./NoteNode";
-import { availableNodes } from "../_utils/constants";
-import { EditNodeModal } from "./EditNodeModal";
+// import useActiveTabs from "../context/ActiveTabsContext";
 
 const edgeTypes = {
   animated: CustomEdge,
   pulse: CustomEdge,
+  running: CustomEdge,
+  done: CustomEdge,
+  error: CustomEdge,
 };
 
 const nodeTypes = {
@@ -62,16 +62,11 @@ export default function WorkflowEditor() {
     edgeContext,
     setEditingNode,
     clearContexts,
-
-    // modal,
-    // closeModal,
   } = useFlowStore();
   const [isLocked, setIsLocked] = useState<boolean>(false);
   const { project } = useReactFlow();
-
+  const lastInvalidRef = useRef<string | null>(null);
   const editingNode = useFlowStore((s) => s.editingNode);
-
-  // const [activeTab, setIsLocked] = useState<boolean>(false);
 
   const nodes = getNodes();
   const edges = getEdges();
@@ -96,26 +91,60 @@ export default function WorkflowEditor() {
     [edges.length, addEdge]
   );
 
-  function handleDropNode(e: React.DragEvent) {
-    e.preventDefault();
+  const handleDropNode = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
 
-    const type = e.dataTransfer.getData("application/reactflow");
+      const type = e.dataTransfer.getData("application/reactflow");
 
-    if (!type) return;
+      if (!type) return;
 
-    const bounds = e.currentTarget.getBoundingClientRect();
-    const position = project({
-      x: e.clientX - bounds.left,
-      y: e.clientY - bounds.top,
-    });
+      const bounds = e.currentTarget.getBoundingClientRect();
+      const position = project({
+        x: e.clientX - bounds.left,
+        y: e.clientY - bounds.top,
+      });
 
-    addNode(type as NodeType, availableNodes[type as NodeType], position);
-  }
+      addNode(type as NodeType, availableNodes[type as NodeType], position);
+    },
+    [project, addNode]
+  );
 
-  function handleDragOver(event: React.DragEvent) {
+  const onConnectEnd = useCallback(() => {
+    lastInvalidRef.current = null;
+  }, []);
+
+  const isValidConnection = useCallback(
+    (connection: Connection) => {
+      if (!connection.source || !connection.target) return false;
+
+      const sourceNode = nodes.find((n) => n.id === connection.source);
+      const targetNode = nodes.find((n) => n.id === connection.target);
+
+      if (!sourceNode || !targetNode) return false;
+
+      const allowedTargets = connectionRules[sourceNode.type as string] || [];
+      const isAllowed = allowedTargets.includes(targetNode.type as string);
+
+      if (!isAllowed) {
+        const invalidKey = `${connection.source}-${connection.target}`;
+        if (lastInvalidRef.current !== invalidKey) {
+          lastInvalidRef.current = invalidKey;
+          toast.error(
+            `${sourceNode.type} can't connect with ${targetNode.type}`
+          );
+        }
+      }
+
+      return isAllowed;
+    },
+    [nodes]
+  );
+
+  const handleDragOver = useCallback((event: React.DragEvent) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";
-  }
+  }, []);
 
   const onNodeContextMenu = useCallback(
     (e: React.MouseEvent, node: Node) => {
@@ -136,20 +165,20 @@ export default function WorkflowEditor() {
   return (
     <>
       <div style={{ width: "100%", height: "calc(100vh - 73px)" }}>
-        <EditorSubHeader activeTab="Editor" onActiveTab={() => {}} />
-
         <ReactFlow
           nodes={nodes}
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
+          onConnectEnd={onConnectEnd}
           zoomOnScroll={!isLocked}
           panOnDrag={!isLocked}
           panOnScroll={!isLocked}
           nodesDraggable={!isLocked}
           nodesConnectable={!isLocked}
           elementsSelectable={!isLocked}
+          isValidConnection={isValidConnection}
           onNodeContextMenu={onNodeContextMenu}
           onEdgeContextMenu={onEdgeContextMenu}
           onPaneClick={clearContexts}

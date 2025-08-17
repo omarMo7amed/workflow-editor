@@ -2,28 +2,53 @@
 import motion from "@/app/src/_components/Motion";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Logo from "./Logo";
 import DesktopNavigation from "./DesktopNavigation";
 import MobileNavigation from "./MobileNavigation";
 import EditorHeader from "./EditorHeader";
+import DashboardHeader from "./dashboard/DashboardHeader";
+import { getCurrentUser } from "../_lib/auth/actions";
 
 export default function Header() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
-  const pathname: string = usePathname();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [user, setUser] = useState<null | {
+    name: string;
+    email: string;
+    avatar?: string;
+  }>(null);
+
+  const pathname = usePathname();
   const isEditor = pathname === "/editor";
+  const isDashboard = pathname.startsWith("/dashboard");
+
+  useEffect(() => {
+    if (!isDashboard) return;
+
+    async function fetchUser() {
+      const currentUser = await getCurrentUser();
+      setUser(currentUser);
+    }
+
+    fetchUser();
+  }, [isDashboard]);
+
+  if (isDashboard && user) {
+    return <DashboardHeader user={user} />;
+  }
 
   return (
     <motion.header
-      className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200"
+      className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200 h-[73px]"
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
     >
       <div
-        className={`${
-          isEditor ? "max-w-[1600px]" : "max-w-7xl"
-        } mx-auto px-6 py-4`}
+        className={`
+          ${isEditor ? "max-w-[1600px]" : "max-w-7xl"}
+          mx-auto px-6 py-4
+        `}
       >
         {isEditor ? (
           <EditorHeader />

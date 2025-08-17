@@ -50,7 +50,6 @@ export function useNodeSave(
       ...(node.type === "readFile" && { choosedFile: state.choosedFile }),
     });
 
-    const updatedNode = getCurrentNode(node.id);
-    dispatch({ type: "reset", payload: updatedNode });
+    dispatch({ type: "reset", payload: node });
   };
 }

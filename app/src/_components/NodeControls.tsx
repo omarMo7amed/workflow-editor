@@ -5,7 +5,7 @@ import { useOutsideClick } from "../_hooks/useOutSideClick";
 import { nodeList } from "../_utils/constants";
 
 export default function NodeControls() {
-  const { addNode, openModal } = useFlowStore();
+  const { addNode } = useFlowStore();
   const [query, setQuery] = useState<string>("");
   const containerRef = useOutsideClick<HTMLDivElement>(() => setQuery(""));
 
@@ -37,7 +37,6 @@ export default function NodeControls() {
                       key={node.type}
                       className="cursor-pointer w-full py-3 text-left hover:bg-gray-50 transition-colors duration-150 border-b border-gray-50 last:border-b-0 flex items-center space-x-3 px-4"
                       onClick={() => {
-                        openModal(node.label);
                         addNode(node.type, node.label);
                         setQuery("");
                       }}

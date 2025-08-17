@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { useState, useRef, DragEvent, ChangeEvent } from "react";
+import { useState, useRef, type DragEvent, type ChangeEvent } from "react";
 import { Upload } from "lucide-react";
-import { FileUploadProps } from "../_types/types";
+import type { FileUploadProps } from "../_types/types";
 import { useFlowStore } from "@/app/_store/flowStore";
 import toast from "react-hot-toast";
 import UploadFilesList from "./UploadFilesList";
@@ -17,12 +18,14 @@ const acceptedFileTypes: Record<string, string> = {
 };
 
 export function FileUpload({
-  onFilesUpload,
   acceptedFileType = ".pdf,.doc,.docx,.txt",
   maxFileSize = 10,
   multiple = true,
+  workflowId,
+  nodeId,
 }: FileUploadProps) {
   const [isDragOver, setIsDragOver] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const uploadedFiles = useFlowStore((s) => s.uploadedFiles);
@@ -53,12 +56,12 @@ export function FileUpload({
     }
   };
 
-  const handleFiles = (files: File[]) => {
+  const handleFiles = async (files: File[]) => {
     const existingKeys = new Set(
       uploadedFiles.map((f) => `${f.name}-${f.size}`)
     );
 
-    const newFiles: File[] = [];
+    const validFiles: File[] = [];
 
     for (const file of files) {
       const key = `${file.name}-${file.size}`;
@@ -79,25 +82,72 @@ export function FileUpload({
         continue;
       }
 
-      newFiles.push(file);
+      validFiles.push(file);
       existingKeys.add(key);
     }
 
-    if (uploadedFiles.length + newFiles.length > MAX_TOTAL_FILES) {
+    if (uploadedFiles.length + validFiles.length > MAX_TOTAL_FILES) {
       toast.error(`Only ${MAX_TOTAL_FILES} files are allowed in total`);
       return;
     }
 
-    if (newFiles.length > 0) {
-      const updated = [...uploadedFiles, ...newFiles];
-      setUploadedFiles(updated);
-      onFilesUpload?.(newFiles);
+    if (validFiles.length > 0) {
+      setIsUploading(true);
+
+      try {
+        const uploadPromises = validFiles.map(async (file) => {
+          const formData = new FormData();
+          formData.append("file", file);
+          if (workflowId) formData.append("workflowId", workflowId);
+          if (nodeId) formData.append("nodeId", nodeId);
+
+          const response = await fetch("/api/files", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || "Upload failed");
+          }
+
+          return await response.json();
+        });
+
+        await Promise.all(uploadPromises);
+
+        // Add files to local state for immediate UI feedback
+        const updated = [...uploadedFiles, ...validFiles];
+        setUploadedFiles(updated);
+
+        toast.success(`${validFiles.length} file(s) uploaded successfully`);
+      } catch (error: any) {
+        toast.error(error.message || "Upload failed");
+      } finally {
+        setIsUploading(false);
+      }
     }
   };
 
-  const removeFile = (index: number) => {
-    const updated = uploadedFiles.filter((_, i) => i !== index);
-    setUploadedFiles(updated);
+  const removeFile = async (index: number) => {
+    const fileToRemove = uploadedFiles[index];
+
+    try {
+      const response = await fetch(`/api/files?fileId=${fileToRemove.name}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Delete failed");
+      }
+
+      const updated = uploadedFiles.filter((_, i) => i !== index);
+      setUploadedFiles(updated);
+      toast.success("File removed successfully");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to remove file");
+    }
   };
 
   return (
@@ -105,7 +155,7 @@ export function FileUpload({
       <div
         className={`border-2 border-dashed rounded-lg p-6 min-h-44 flex flex-col justify-center cursor-pointer transition-colors ${
           isDragOver ? "bg-blue-50" : "border-gray-300 hover:border-gray-400"
-        }`}
+        } ${isUploading ? "opacity-50 pointer-events-none" : ""}`}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
@@ -118,7 +168,7 @@ export function FileUpload({
         <div className="mt-2.5">
           <p className="text-sm text-gray-600">
             <span className="font-semibold text-blue-600 hover:text-blue-500">
-              Click to upload
+              {isUploading ? "Uploading..." : "Click to upload"}
             </span>{" "}
             or drag and drop
           </p>
@@ -133,6 +183,7 @@ export function FileUpload({
           className="hidden"
           onChange={handleFileSelect}
           accept={acceptedFileType}
+          disabled={isUploading}
         />
       </div>
 

@@ -22,7 +22,7 @@ const staggerContainer = {
 export default function Landing() {
   return (
     <div
-      className={`min-h-minus-header bg-gradient-to-br  from-slate-50 via-slate-100 to-slate-200 relative overflow-hidden`}
+      className={` bg-gradient-to-br  from-slate-50 via-slate-100 to-slate-200 relative overflow-hidden`}
     >
       {/* Background Elements */}
       <BackgroundGrid />

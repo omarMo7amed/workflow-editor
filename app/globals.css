@@ -25,7 +25,7 @@ textarea {
 
 @keyframes dash {
   to {
-    stroke-dashoffset: -10;
+    stroke-dashoffset: -20;
   }
 }
 

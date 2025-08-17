@@ -1,11 +1,13 @@
+import EditorSubHeader from "../src/_components/EditorSubHeader";
+import WorkflowCanvas from "../src/_components/WorkflowCanvas";
 import { ReactFlowProvider } from "reactflow";
-import WorkflowEditor from "../src/_components/WorkFlowEditor";
 
 export default function Editor() {
   return (
-    <div className="relative">
+    <div className="relative flex-1">
       <ReactFlowProvider>
-        <WorkflowEditor />
+        <EditorSubHeader />
+        <WorkflowCanvas />
       </ReactFlowProvider>
     </div>
   );

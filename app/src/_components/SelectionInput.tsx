@@ -41,9 +41,9 @@ export default function SelectionInput({
     setSelectedOption(value);
   }, [value]);
 
-  const handleOptionClick = (value: string) => {
+  const handleOptionClick = (value: string, label: string) => {
     setSelectedOption(value);
-    onSelectChange?.(value);
+    onSelectChange?.(label);
     setIsOpen(false);
   };
 
@@ -69,7 +69,7 @@ export default function SelectionInput({
           aria-expanded={isOpen}
           aria-controls={`${id}-listbox`}
           tabIndex={0}
-          className="w-full border-2 p-1.5 pr-2 border-gray-300 rounded-xl focus:ring-gray-400 focus:ring-2 focus:border-none focus:outline-none focus:ring-offset-2 transition duration-200 placeholder-gray-400 hover:shadow-lg hover:shadow-gray-200/30 focus:scale-[1.02] focus:shadow-xl focus:shadow-gray-200/50 cursor-pointer flex items-center justify-between"
+          className="w-full border-2 p-2 pr-2 border-gray-300 rounded-xl focus:ring-gray-400 focus:ring-2 focus:border-none focus:outline-none focus:ring-offset-2 transition duration-200 placeholder-gray-400 hover:shadow-lg hover:shadow-gray-200/30 focus:scale-[1.02] focus:shadow-xl focus:shadow-gray-200/50 cursor-pointer flex items-center justify-between"
           onClick={() => setIsOpen(!isOpen)}
           onKeyDown={handleKeyDown}
         >
@@ -108,7 +108,7 @@ export default function SelectionInput({
                     : ""
                 }`}
                 tabIndex={0}
-                onClick={() => handleOptionClick(option.value)}
+                onClick={() => handleOptionClick(option.value, option.label)}
               >
                 {option.label}
               </li>

@@ -2,7 +2,9 @@
 
 import { createContext, Dispatch, useContext } from "react";
 import { ChildrenType, TableOfContentsProps } from "../_types/types";
-import useActiveInspector from "./ActiveTabsContext";
+import useActiveTabs from "./ActiveTabsContext";
+import { useFlowStore } from "@/app/_store/flowStore";
+import { motion } from "framer-motion";
 
 const TableOfContentsContext = createContext<
   | {
@@ -16,20 +18,33 @@ export default function TableOfContents({
   side,
   children,
 }: TableOfContentsProps) {
-  const { left, right, setLeft, setRight } = useActiveInspector();
+  const { left, right, setLeft, setRight } = useActiveTabs();
+  const mode = useFlowStore((s) => s.mode);
 
   const active = side === "left" ? left : right;
   const setActive = side === "left" ? setLeft : setRight;
+  const isExecuting = mode === "Executions";
 
   return (
     <TableOfContentsContext.Provider value={{ active, setActive }}>
-      <aside
+      <motion.aside
+        initial={false}
+        animate={
+          side === "right"
+            ? isExecuting
+              ? { width: 0, opacity: 0 }
+              : { width: 300, opacity: 1 }
+            : isExecuting
+            ? { width: 450, opacity: 1 }
+            : { width: 300, opacity: 1 }
+        }
+        transition={{ duration: 0.4, ease: "easeInOut" }}
         className={`hidden md:block relative ${
-          side !== "right" ? " left-0 border-r " : " border-l right-0 "
-        } w-74 h-[calc(100vh-73px)] overflow-y-auto bg-white border-l border-gray-200 z-40 shadow-md space-y-1`}
+          side !== "right" ? "border-r" : "border-l"
+        } h-[calc(100vh-73px)] overflow-y-auto bg-white border-gray-200 z-40 shadow-md space-y-1`}
       >
         {children}
-      </aside>
+      </motion.aside>
     </TableOfContentsContext.Provider>
   );
 }

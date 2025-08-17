@@ -12,7 +12,7 @@ export default function RootLayout({
       <body>
         <Header />
         <Toaster position="top-right" />
-        <main className="pt-[72.8px]">{children}</main>
+        <main className="pt-[72.8px] min-h-screen ">{children}</main>
       </body>
     </html>
   );

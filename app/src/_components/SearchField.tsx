@@ -1,19 +1,26 @@
 import { SearchFieldProps } from "../_types/types";
 import { Search, X } from "lucide-react";
 
-export default function SearchField({ query, setQuery }: SearchFieldProps) {
+export default function SearchField({
+  query,
+  setQuery,
+  placeholder,
+  className = "",
+}: SearchFieldProps) {
   return (
     <div className="relative flex items-center">
       <Search
-        className="text-gray-400 absolute left-4 top-1/2 transform -translate-y-1/2 transition-colors duration-300 pointer-events-none z-10"
+        className="text-gray-400 absolute left-4 top-1/2 transform -translate-y-1/2    pointer-events-none z-10"
         size={18}
       />
       <input
         type="text"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="What is the next ?"
-        className="w-full h-10 px-12 py-2 border-2 border-gray-200 rounded-xl backdrop-blur-sm text-gray-700 placeholder-gray-400 transition duration-150 ease-out hover:border-gray-300 hover:shadow-md focus:border-none focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-1 focus:shadow-lg focus:shadow-gray-200/30"
+        placeholder={placeholder || "Search for node to add..."}
+        className={`h-10 px-12 py-2 border-2 border-gray-200 rounded-xl backdrop-blur-sm text-gray-700 placeholder-gray-400 transition duration-150 ease-out hover:border-gray-300 hover:shadow-md focus:border-none focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-1 focus:shadow-lg focus:shadow-gray-200/30 
+          ${className ? ` ${className}` : "w-full"}
+          `}
         id="search-node"
         name="searchNode"
         aria-label="search for node to add"

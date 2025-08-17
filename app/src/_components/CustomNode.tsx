@@ -1,9 +1,13 @@
+"use client";
+
+import { nodeConfig, NodeStatusConfig } from "../_utils/constants";
+import { Handle, Position } from "reactflow";
+import { NodeStatus, NodeType } from "../_types/types";
+import { motion } from "framer-motion";
+import { getNodeStatusStyles } from "../_utils/helper";
+import NodePanel from "./NodePanel";
 import useActiveTabs from "../context/ActiveTabsContext";
 import { useFlowStore } from "@/app/_store/flowStore";
-import { nodeConfig } from "../_utils/constants";
-import { Handle, Position } from "reactflow";
-import { NodeType } from "../_types/types";
-import NodePanel from "./NodePanel";
 
 interface CustomNodeProps {
   data: {
@@ -12,67 +16,96 @@ interface CustomNodeProps {
     id: string;
     description?: string;
     choosedFile?: string;
-    extractedText?: string;
+    output?: string | File;
     reportFormat?: string;
-    status: "idle" | "excute" | "finish" | "error";
+    status: NodeStatus;
   };
   selected: boolean;
 }
 
 export default function CustomNode({ data, selected }: CustomNodeProps) {
-  const { duplicateNode, deleteNode, getCurrentNode, setEditingNode } =
-    useFlowStore();
-
+  const mode = useFlowStore((state) => state.mode);
+  const { deleteNode, getCurrentNode } = useFlowStore();
   const { setRight, setCurrentNodeId } = useActiveTabs();
+
   const node = getCurrentNode(data.id);
+  const isEditor = mode === "Editor";
 
   const config = nodeConfig[data.type] || nodeConfig.readFile;
-  const Icon = config.icon;
+  const { icon: NodeIcon } = config;
+
+  const { Icon: StatusIcon } =
+    data.status === "idle" && isEditor
+      ? {}
+      : NodeStatusConfig[data.status] || {};
+
+  const { iconColor, statusIconColor, animation } = getNodeStatusStyles(
+    data.status
+  );
 
   return (
     <div
       className="group relative"
-      onDoubleClick={() => {
-        setRight("Inspector");
-        setCurrentNodeId(data.id);
-      }}
-      onKeyDown={(e) => {
-        if (e.code === "Delete") deleteNode(data.id);
-      }}
-      title={`${data.choosedFile || "No File Assigned Yet"}`}
+      {...(mode === "Editor" && {
+        onDoubleClick: () => {
+          setRight("Inspector");
+          setCurrentNodeId(data.id);
+        },
+        onKeyDown: (e: React.KeyboardEvent) => {
+          if (e.code === "Delete") deleteNode(data.id);
+        },
+        title: data.choosedFile || "No File Assigned Yet",
+      })}
     >
-      <NodePanel
-        node={node!}
-        onDuplicate={duplicateNode}
-        onEdit={setEditingNode}
-        onDelete={deleteNode}
-      />
+      {isEditor && <NodePanel node={node!} onDelete={deleteNode} />}
 
       <div
         tabIndex={0}
         className={`rounded-2xl border-2 transition-all duration-200 outline-none
-    ${selected ? config.borderClass.selected : config.borderClass.default}
-    bg-gradient-to-br ${config.bgGradient}
-    ${config.hoverGradient}
-    ${config.borderClass.hover}
-    ${config.focusShadow}
-    px-4 py-4`}
+          ${selected ? config.borderClass.selected : config.borderClass.default}
+          bg-gradient-to-br ${config.bgGradient} ${config.hoverGradient}
+          ${config.borderClass.hover} ${config.focusShadow}
+          ${
+            isEditor
+              ? ""
+              : `${NodeStatusConfig[data.status].color} ${animation}`
+          }
+          px-4 py-4`}
       >
-        <div className="flex p-2 items-center">
-          <Icon size={44} className={config.iconColor} />
+        <div className="flex items-center p-2">
+          <div className="relative">
+            <NodeIcon
+              size={44}
+              className={
+                !isEditor
+                  ? `${iconColor} ${
+                      data.status === "running" ? "animate-spin" : ""
+                    }`
+                  : config.iconColor
+              }
+            />
+            {StatusIcon && (
+              <div className="absolute -top-4 -right-4">
+                <StatusIcon
+                  size={20}
+                  className={`${statusIconColor} ${animation}`}
+                />
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
+      {/* Handles */}
       <Handle
         type="source"
         position={Position.Right}
         style={{
           width: "15px",
           height: "15px",
-          backgroundColor: `${config.receptorColor}`,
+          backgroundColor: config.receptorColor,
         }}
       />
-
       <Handle
         type="target"
         position={Position.Left}
@@ -81,12 +114,13 @@ export default function CustomNode({ data, selected }: CustomNodeProps) {
           width: "10px",
           height: "20px",
           borderRadius: "4px",
-          backgroundColor: `${config.receptorColor}`,
+          backgroundColor: config.receptorColor,
         }}
       />
 
+      {/* Label */}
       <div
-        className={`absolute -bottom-8 left-1/2 transform -translate-x-1/2 text-md ${config.textColor} font-semibold whitespace-nowrap`}
+        className={`absolute -bottom-8 left-1/2 -translate-x-1/2 text-md font-semibold whitespace-nowrap ${config.textColor}`}
       >
         {data.label}
       </div>

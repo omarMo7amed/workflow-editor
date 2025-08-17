@@ -3,14 +3,21 @@ import {
   BarChart3,
   BookOpen,
   Brain,
+  CheckCircle,
+  Clock,
   FileEdit,
   FileText,
   Mail,
+  XCircle,
 } from "lucide-react";
 import {
   availableNodeType,
+  DefaultNode,
   DevObjective,
+  EdgeConfig,
+  EdgeType,
   docsNavigationItems as NavigationItems,
+  NodeStatus,
   NodeType,
   PortfolioValueCardProps,
   TechnologiesTypes,
@@ -258,4 +265,80 @@ export const nodeConfigMap = {
   report: ReportConfig,
   email: EmailConfig,
   summarize: null,
+};
+
+export const edgeConfig: Record<EdgeType, EdgeConfig> = {
+  animated: {
+    strokeWidth: 3,
+    markerColor: "#64748b",
+  },
+  pulse: {
+    strokeWidth: 4,
+    filter: "drop-shadow(0 0 6px rgba(59, 130, 246, 0.4))",
+    markerColor: "#3b82f6",
+  },
+
+  running: {
+    stroke: "#3B82F6",
+    strokeWidth: 3,
+    strokeDasharray: "5,5",
+    animation: "dash 1s linear infinite",
+    markerColor: "#3b82f6",
+  },
+
+  done: {
+    stroke: "#10B981",
+    strokeWidth: 3,
+    markerColor: "#10B981",
+  },
+  error: {
+    stroke: "#DC2626",
+    strokeWidth: 3,
+    markerColor: "#DC2626",
+  },
+};
+
+export const defaultNodes: DefaultNode[] = [
+  {
+    type: "readFile",
+    label: "Read File",
+    icon: FileText,
+    color: "text-green-500",
+  },
+  {
+    type: "summarize",
+    label: "Summarize",
+    icon: BookOpen,
+    color: "text-amber-500",
+  },
+  { type: "email", label: "Send Email", icon: Mail, color: "text-slate-500" },
+  {
+    type: "report",
+    label: "Generate Report",
+    icon: BarChart,
+    color: "text-blue-500",
+  },
+];
+
+export const connectionRules: Record<string, string[]> = {
+  start: ["readFile", "email"],
+  readFile: ["summarize"],
+  summarize: ["email", "report"],
+  email: ["report"],
+  report: ["email"],
+};
+
+export const NodeStatusConfig: Record<
+  NodeStatus,
+  {
+    Icon: React.ComponentType<{ size: number; className?: string }>;
+    color: string;
+    animation?: string;
+  }
+> = {
+  idle: { Icon: Clock, color: "bg-gray-200", animation: "" },
+  pending: { Icon: Clock, color: "bg-blue-100", animation: "" },
+  running: { Icon: Clock, color: "bg-blue-300", animation: "animate-pulse" },
+  success: { Icon: CheckCircle, color: "bg-green-200", animation: "" },
+  error: { Icon: XCircle, color: "bg-red-200", animation: "" },
 };

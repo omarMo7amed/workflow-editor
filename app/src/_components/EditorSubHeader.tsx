@@ -1,10 +1,8 @@
-import { EditorSubHeaderPorps } from "../_types/types";
+import { useFlowStore } from "@/app/_store/flowStore";
 import motion from "./Motion";
 
-export default function EditorSubHeader({
-  activeTab,
-  onActiveTab,
-}: EditorSubHeaderPorps) {
+export default function EditorSubHeader() {
+  const { setMode, mode } = useFlowStore();
   return (
     <motion.div
       initial={{ opacity: 0, translateY: -20 }}
@@ -13,9 +11,9 @@ export default function EditorSubHeader({
     >
       <div className="flex items-center  justify-center gap-2 p-1.5 bg-slate-300/30 backdrop-blur-md rounded-md shadow-xl">
         <button
-          onClick={() => onActiveTab("Editor")}
+          onClick={() => setMode("Editor")}
           className={`text-xs font-medium  cursor-pointer px-3 py-1 rounded-md  ${
-            activeTab === "Editor"
+            mode === "Editor"
               ? "bg-slate-700 text-slate-100 font-semibold "
               : "hover:text-blue-600 text-slate-700 "
           }    duration-200 tracking-wide`}
@@ -24,14 +22,14 @@ export default function EditorSubHeader({
         </button>
 
         <button
-          onClick={() => onActiveTab("Executor")}
+          onClick={() => setMode("Executions")}
           className={`text-xs font-medium text-slate-100 cursor-pointer px-3 py-1 rounded-md ${
-            activeTab === "Executor"
+            mode === "Executions"
               ? "bg-slate-700 text-slate-100 font-semibold"
               : "hover:text-blue-600 text-slate-700 "
           }    duration-200 tracking-wide`}
         >
-          Executor
+          Executions
         </button>
       </div>
     </motion.div>

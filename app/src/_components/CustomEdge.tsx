@@ -4,40 +4,12 @@ import {
   BaseEdge,
   EdgeProps,
 } from "reactflow";
-
-type EdgeType = "animated" | "pulse" | "startEdge";
-
-interface EdgeConfig {
-  strokeWidth: number;
-  stroke?: string;
-  filter?: string;
-  markerColor: string;
-  strokeDasharray?: string;
-}
-
-interface CustomEdgeData {
-  label?: string;
-  showLabel?: boolean;
-  edgeType?: string;
-}
-
-const edgeConfig: Record<EdgeType, EdgeConfig> = {
-  animated: {
-    strokeWidth: 3,
-    markerColor: "#64748b",
-  },
-  pulse: {
-    strokeWidth: 4,
-    filter: "drop-shadow(0 0 6px rgba(59, 130, 246, 0.4))",
-    markerColor: "#3b82f6",
-  },
-  startEdge: {
-    strokeWidth: 3,
-    stroke: "#64748b",
-    markerColor: "#64748b",
-    strokeDasharray: "5,5",
-  },
-};
+import { useEffect, useRef, useState } from "react";
+import EdgePanel from "./EdgePanel";
+import { useFlowStore } from "@/app/_store/flowStore";
+import { CustomEdgeData, EdgeType } from "../_types/types";
+import { edgeConfig } from "../_utils/constants";
+import { useEnterKey } from "../_hooks/useEnterKey";
 
 export default function CustomEdge({
   id,
@@ -50,6 +22,7 @@ export default function CustomEdge({
   style = {},
   data,
 }: EdgeProps<CustomEdgeData>) {
+  // Path & label positioning
   const [edgePath, labelX, labelY] = getBezierPath({
     sourceX,
     sourceY,
@@ -59,14 +32,43 @@ export default function CustomEdge({
     targetPosition,
   });
 
-  const edgeType = data?.edgeType || "animated";
-  const config = edgeConfig[edgeType as EdgeType] || edgeConfig.animated;
-  const markerId = `marker-arrow-${id}`;
+  const [isHovered, setIsHovered] = useState(false);
+  const [isEditingLabel, setIsEditingLabel] = useState(false);
+  const [label, setLabel] = useState<string | undefined>(data?.label);
+  const leaveTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const { deleteEdge, editEdgeLabel, toggleEdgeLabel, mode } = useFlowStore();
+  const isEditor = mode === "Editor";
+
+  const edgeType: EdgeType = (data?.edgeType as EdgeType) || "animated";
+  const config = edgeConfig[edgeType] || edgeConfig.animated;
+
   const gradientId = `gradient-${edgeType}-${id}`;
-  console.log(data?.edgeType);
+  const markerId = `marker-arrow-${id}`;
+
+  const handleSave = () => {
+    if (label !== undefined) editEdgeLabel(id, label);
+    setIsEditingLabel(false);
+  };
+
+  const handleMouseEnter = () => {
+    if (leaveTimeout.current) clearTimeout(leaveTimeout.current);
+    setIsHovered(true);
+  };
+
+  const handleMouseLeave = () => {
+    leaveTimeout.current = setTimeout(() => setIsHovered(false), 500);
+  };
+
+  useEnterKey(handleSave, !!id);
+
+  useEffect(() => {
+    setLabel(data?.label);
+  }, [data?.label]);
 
   return (
     <>
+      {/* Arrow & stroke definitions */}
       <defs>
         <marker
           id={markerId}
@@ -81,68 +83,118 @@ export default function CustomEdge({
           <path d="M 0 0 L 10 4 L 0 8 z" fill={config.markerColor} />
         </marker>
 
-        <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop
-            offset="0%"
-            stopColor={config.markerColor}
-            stopOpacity={edgeType === "animated" ? "0.5" : "0.2"}
-          />
-          <stop offset="50%" stopColor={config.markerColor} stopOpacity="1" />
-          <stop
-            offset="100%"
-            stopColor={config.markerColor}
-            stopOpacity={edgeType === "animated" ? "0.5" : "0.2"}
-          />
-          <animateTransform
-            attributeName="gradientTransform"
-            type="translate"
-            values="-200 0;200 0;-200 0"
-            dur={edgeType === "animated" ? "3s" : "2s"}
-            repeatCount="indefinite"
-          />
-        </linearGradient>
+        {/* Gradient for animated edges */}
+        {edgeType === "animated" && (
+          <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop
+              offset="0%"
+              stopColor={config.markerColor}
+              stopOpacity="0.5"
+            />
+            <stop offset="50%" stopColor={config.markerColor} stopOpacity="1" />
+            <stop
+              offset="100%"
+              stopColor={config.markerColor}
+              stopOpacity="0.5"
+            />
+            <animateTransform
+              attributeName="gradientTransform"
+              type="translate"
+              values="-200 0;200 0;-200 0"
+              dur="3s"
+              repeatCount="indefinite"
+            />
+          </linearGradient>
+        )}
       </defs>
 
-      {/* Main visible edge */}
+      {/* Main edge line */}
       <BaseEdge
         path={edgePath}
         style={{
           ...style,
           pointerEvents: "none",
           strokeWidth: config.strokeWidth,
-          stroke: `url(#${gradientId})`,
+          stroke:
+            edgeType === "animated"
+              ? `url(#${gradientId})`
+              : config.stroke || config.markerColor,
+          strokeDasharray: config.strokeDasharray,
           filter: config.filter,
+          animation: config?.animation,
         }}
         markerEnd={`url(#${markerId})`}
       />
 
+      {/* Transparent hitbox for hover */}
       <path
         d={edgePath}
         fill="none"
         stroke="transparent"
-        strokeWidth={20}
+        strokeWidth={40}
         style={{ pointerEvents: "stroke" }}
-        onContextMenu={(e) => {
-          e.preventDefault();
-          const customEvent = new CustomEvent("edge-context-menu", {
-            detail: { edgeId: id, x: e.clientX, y: e.clientY },
-          });
-          window.dispatchEvent(customEvent);
-        }}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
       />
 
+      {/* Hover menu */}
+      {isEditor && isHovered && (
+        <EdgeLabelRenderer>
+          <div
+            style={{
+              position: "absolute",
+              transform: `translate(-50%, -50%) translate(${labelX - 20}px, ${
+                labelY - 20
+              }px)`,
+              pointerEvents: "all",
+              zIndex: 1000,
+            }}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+          >
+            <EdgePanel
+              edge={{
+                id,
+                source: "",
+                target: "",
+                type: edgeType,
+                data: data ?? {},
+                selected: false,
+              }}
+              onDelete={deleteEdge}
+              onToggle={toggleEdgeLabel}
+            />
+          </div>
+        </EdgeLabelRenderer>
+      )}
+
+      {/* Edge label */}
       {data?.showLabel && (
         <EdgeLabelRenderer>
           <div
             style={{
               position: "absolute",
-              transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
+              transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
               fontSize: 12,
               pointerEvents: "all",
             }}
             className="nodrag nopan bg-white px-2 py-1 rounded-full border border-gray-300 shadow-sm text-xs font-medium text-gray-600 outline-none"
+            onDoubleClick={() => setIsEditingLabel(true)}
+            onBlur={handleSave}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
           >
-            {data.label || "Flow"}
+            {isEditingLabel ? (
+              <input
+                type="text"
+                value={label}
+                onChange={(e) => setLabel(e.target.value)}
+                className="w-24"
+                autoFocus
+              />
+            ) : (
+              <h4>{label}</h4>
+            )}
           </div>
         </EdgeLabelRenderer>
       )}

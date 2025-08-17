@@ -6,6 +6,7 @@ interface ButtonProps {
   children: ReactNode;
   disabled?: boolean;
   onClick?: (arg?: unknown) => void;
+  type?: "button" | "submit";
 }
 
 export default function Button({
@@ -14,6 +15,7 @@ export default function Button({
   children,
   disabled = false,
   onClick,
+  type = "button",
 }: ButtonProps) {
   const baseStyles =
     "px-4 py-2 text-sm cursor-pointer transition-colors duration-200 focus:ring-2 focus:ring-slate-400";
@@ -25,6 +27,7 @@ export default function Button({
 
   return (
     <button
+      type={type}
       disabled={disabled}
       className={`${baseStyles} ${degreeStyles[degree] || degreeStyles.main} ${
         extraStyle || ""
