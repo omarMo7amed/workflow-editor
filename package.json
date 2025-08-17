@@ -9,9 +9,16 @@
     "lint": "next lint"
   },
   "dependencies": {
+<<<<<<< HEAD
     "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.55.0",
     "docx": "^9.5.1",
+=======
+    "@supabase/auth-helpers-nextjs": "^0.10.0",
+    "@supabase/auth-ui-react": "^0.4.7",
+    "@supabase/auth-ui-shared": "^0.1.8",
+    "@supabase/supabase-js": "^2.55.0",
+>>>>>>> 72c87914f6972d14068f41812ff9f34fbeea407a
     "framer-motion": "^12.23.9",
     "lucide-react": "^0.525.0",
     "mammoth": "^1.10.0",
@@ -26,7 +33,7 @@
     "react-hot-toast": "^2.5.2",
     "reactflow": "^11.11.4",
     "uuid": "^11.1.0",
-    "zustand": "^5.0.6"
+    "zustand": "^5.0.7"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

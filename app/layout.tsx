@@ -1,5 +1,5 @@
 import { Toaster } from "react-hot-toast";
-import Header from "./src/_components/Header";
+import Header from "./src/_components/header";
 import "./globals.css";
 
 export default function RootLayout({

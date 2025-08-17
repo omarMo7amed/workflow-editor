@@ -1,5 +1,6 @@
 "use client";
 
+import AuthGuard from "@/components/AuthGuard";
 import { ActiveTabsContextProvider } from "../src/context/ActiveTabsContext";
 import WorkflowInspector from "../src/_components/WorkflowInspector";
 import InstructionField from "../src/_components/InstructionField";
@@ -20,7 +21,12 @@ import ExecutionStats from "../src/_components/ExecutionsStats";
 
 export default function Page() {
   return (
+<<<<<<< HEAD
     <section className="flex min-h-[calc(100vh-73px)] w-full">
+=======
+    <AuthGuard>
+    <section className="grid grid-cols-[max-content_1fr_max-content] mx-auto">
+>>>>>>> 72c87914f6972d14068f41812ff9f34fbeea407a
       <ActiveTabsContextProvider>
         <TableOfContents side="left" activeTab="Load">
           <TableOfContents.Head>
@@ -72,5 +78,6 @@ export default function Page() {
         </TableOfContents>
       </ActiveTabsContextProvider>
     </section>
+    </AuthGuard>
   );
 }

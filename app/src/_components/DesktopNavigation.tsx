@@ -1,13 +1,17 @@
 import motion from "@/app/src/_components/Motion";
-import { ArrowRight } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import Link from "next/link";
 import NavItems from "./NavItems";
 
 export default function DesktopNavigation({ pathname }: { pathname: string }) {
+  const { user } = useAuth();
+
   return (
     <>
       <nav className="hidden md:flex items-center gap-8">
         <NavItems pathname={pathname} />
       </nav>
+<<<<<<< HEAD
 
       <div className="hidden md:flex items-center gap-4">
         <motion.a
@@ -20,6 +24,8 @@ export default function DesktopNavigation({ pathname }: { pathname: string }) {
           <ArrowRight className="w-4 h-4" />
         </motion.a>
       </div>
+=======
+>>>>>>> 72c87914f6972d14068f41812ff9f34fbeea407a
     </>
   );
 }
