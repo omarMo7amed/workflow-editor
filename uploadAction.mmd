@@ -1,0 +1,27 @@
+flowchart TD
+
+%% --- SAVE FLOW ---
+subgraph SaveFlow[Save Flow]
+    A[Click Save Button]:::action --> B[Upload Files]:::file
+    B -->|Supabase Storage| C[Store File References]:::db
+    A --> D[Save Workflow State]:::workflow
+    D -->|Nodes + Edges JSON| E[Save to Supabase DB]:::db
+    C --> F[Workflow + Files Saved Successfully]:::success
+    E --> F
+end
+
+%% --- EXECUTION FLOW ---
+subgraph ExecFlow[Execution Flow]
+    G[Click Execute Workflow]:::action --> H[Start Node]:::workflow
+    H --> I[Execute Read File Node]:::file
+    I --> J[Execute Next Node → Summarize]:::workflow
+    J --> K[Continue Workflow Until End]:::workflow
+    K --> L[Execution Results Shown]:::success
+end
+
+%% --- STYLES ---
+classDef action fill:#FFDD57,stroke:#333,stroke-width:2px,color:#000;
+classDef file fill:#6EC6FF,stroke:#0366d6,stroke-width:2px,color:#000;
+classDef workflow fill:#A5D6A7,stroke:#2e7d32,stroke-width:2px,color:#000;
+classDef db fill:#FFD180,stroke:#ef6c00,stroke-width:2px,color:#000;
+classDef success fill:#B39DDB,stroke:#4527a0,stroke-width:2px,color:#000;

@@ -1,5 +1,5 @@
-import { portfolioValues } from "@/app/src/_utils/constants";
-import PortfolioValueCard from "../components/PortfolioValueCard";
+import { portfolioValues } from "../../_utils/constants";
+import PortfolioValueCard from "../../_components/docs/PortfolioValueCard";
 
 export default function PortfolioValueSection() {
   return (

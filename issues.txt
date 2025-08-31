@@ -1,0 +1,20 @@
+1) when you upload file and remove it after file uploaded , immeditly you will got storage_path get (undefind)
+
+2) when you remove file you will not remove it from node //and still!
+
+3) i use server action but it efficient for submission form any thing <= 1mb  solution use(API)
+
+4) vercel doesn't has a memory so pdf-parse can't work and it expected node js env
+
+5) i can't parse the pdf file
+
+6) we work on generate report (and doens't work again)
+
+7) not responsive 
+
+8) database is not normalized (it's bad but i have the schema to make it follow  3NF)
+
+
+
+
+

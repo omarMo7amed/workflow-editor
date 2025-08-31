@@ -1,9 +1,9 @@
 "use client";
-import motion from "@/app/src/_components/Motion";
+import motion from "../_components/Motion";
 import { ArrowRight, ChevronDown } from "lucide-react";
-import FloatingNodes from "./components/FloatingNodes";
-import BackgroundGrid from "./components/BackgroundGrid";
-import InteractiveConnections from "./components/InteractiveConnections";
+import FloatingNodes from "../_components/home/FloatingNodes";
+import BackgroundGrid from "../_components/home/BackgroundGrid";
+import InteractiveConnections from "../_components/home/InteractiveConnections";
 
 const fadeInUp = {
   initial: { opacity: 0, y: 60 },

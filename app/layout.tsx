@@ -1,6 +1,14 @@
 import { Toaster } from "react-hot-toast";
-import Header from "./src/_components/header";
+import Header from "./_components/Header";
 import "./globals.css";
+
+export const metadata = {
+  title: {
+    default: "Workflow Editor",
+    template: "%s",
+  },
+  description: "A workflow editor to create and manage workflows.",
+};
 
 export default function RootLayout({
   children,

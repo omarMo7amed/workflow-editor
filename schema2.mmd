@@ -1,0 +1,179 @@
+erDiagram
+    USERS {
+        uuid id PK
+        text email
+        text password_hash
+        text role
+        timestamptz created_at
+        timestamptz updated_at
+        text avatar_url
+    }
+
+    WORKFLOWS {
+        uuid id PK
+        uuid user_id FK
+        text name
+        text description
+        text status
+        timestamptz last_run_at
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
+    WORKFLOW_NODES {
+        uuid id PK
+        uuid workflow_id FK
+        text label
+        uuid node_type_id FK
+        int position_x
+        int position_y
+    }
+
+    NODE_TYPES {
+        uuid id PK
+        text name
+        text description
+    }
+
+    WORKFLOW_NODE_DATA {
+        uuid id PK
+        uuid node_id FK
+        text description
+        text instructions
+        text status
+        uuid report_format_id FK
+        text file_name
+        text file_path
+    }
+
+    REPORT_FORMATS {
+        uuid id PK
+        text format_name
+        text mime_type
+    }
+
+    WORKFLOW_EDGES {
+        uuid id PK
+        uuid workflow_id FK
+        uuid source_node_id FK
+        uuid target_node_id FK
+        uuid edge_type_id FK
+        text label
+    }
+
+    EDGE_TYPES {
+        uuid id PK
+        text name
+        text description
+    }
+
+    WORKFLOW_EDGE_DATA {
+        uuid id PK
+        uuid edge_id FK
+        text input
+        text output
+    }
+
+    WORKFLOW_EDGE_STYLE {
+        uuid id PK
+        uuid edge_id FK
+        text style_key
+        text style_value
+    }
+
+    WORKFLOW_SETTINGS {
+        uuid id PK
+        uuid workflow_id FK
+        text setting_key
+        text setting_value
+    }
+
+    USER_FILES {
+        uuid id PK
+        uuid user_id FK
+        uuid workflow_id FK
+        uuid node_id FK
+        text filename
+        text original_filename
+        bigint file_size
+        text mime_type
+        text storage_path
+        timestamptz uploaded_at
+    }
+
+    EXECUTION_LOGS {
+        uuid id PK
+        uuid user_id FK
+        uuid workflow_id FK
+        uuid node_id FK
+        uuid file_id FK
+        text node_label
+        text status
+        timestamptz started_at
+        timestamptz finished_at
+        int duration
+        text error_message
+        timestamptz created_at
+    }
+
+    EXECUTION_OUTPUTS {
+        uuid id PK
+        uuid execution_log_id FK
+        jsonb output
+    }
+
+    EXECUTION_STATUS {
+        uuid id PK
+        text status_name
+        text description
+    }
+
+    AUDIT_LOGS {
+        uuid id PK
+        uuid user_id FK
+        text action
+        text entity_type
+        uuid entity_id
+        timestamptz created_at
+    }
+
+    TAGS {
+        uuid id PK
+        text name
+    }
+
+    WORKFLOW_TAGS {
+        uuid id PK
+        uuid workflow_id FK
+        uuid tag_id FK
+    }
+
+    %% Relationships
+    USERS ||--o{ WORKFLOWS : "owns"
+    USERS ||--o{ USER_FILES : "uploads"
+    USERS ||--o{ EXECUTION_LOGS : "executes"
+    USERS ||--o{ AUDIT_LOGS : "creates"
+
+    WORKFLOWS ||--o{ WORKFLOW_NODES : "contains"
+    WORKFLOWS ||--o{ WORKFLOW_EDGES : "contains"
+    WORKFLOWS ||--o{ WORKFLOW_SETTINGS : "has"
+    WORKFLOWS ||--o{ USER_FILES : "has"
+    WORKFLOWS ||--o{ EXECUTION_LOGS : "has"
+    WORKFLOWS ||--o{ WORKFLOW_TAGS : "tagged with"
+
+    WORKFLOW_NODES ||--o{ WORKFLOW_NODE_DATA : "has"
+    WORKFLOW_NODES ||--o{ USER_FILES : "uses"
+    WORKFLOW_NODES ||--o{ EXECUTION_LOGS : "executed in"
+    WORKFLOW_NODES ||--|| NODE_TYPES : "is type of"
+
+    WORKFLOW_EDGES ||--o{ WORKFLOW_EDGE_DATA : "has"
+    WORKFLOW_EDGES ||--o{ WORKFLOW_EDGE_STYLE : "styled with"
+    WORKFLOW_EDGES ||--|| EDGE_TYPES : "is type of"
+
+    WORKFLOW_NODE_DATA ||--|| REPORT_FORMATS : "report in"
+
+    EXECUTION_LOGS ||--o{ EXECUTION_OUTPUTS : "produces"
+    EXECUTION_LOGS ||--|| EXECUTION_STATUS : "has status"
+
+    TAGS ||--o{ WORKFLOW_TAGS : "links"
+    WORKFLOWS ||--o{ WORKFLOW_TAGS : "tagged"

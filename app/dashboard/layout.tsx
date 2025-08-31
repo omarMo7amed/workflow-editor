@@ -1,6 +1,13 @@
-import Sidebar from "../src/_components/dashboard/Sidebar";
-import { getCurrentUser } from "../src/_lib/auth/actions";
-import UserProvider from "../src/context/UserProvider";
+import { redirect } from "next/navigation";
+import Sidebar from "../_components/dashboard/Sidebar";
+import { getCurrentUser } from "../_lib/auth/actions";
+import UserProvider from "../context/UserProvider";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Dashboard",
+  description: "User dashboard",
+};
 
 export default async function DashboardLayout({
   children,
@@ -9,7 +16,7 @@ export default async function DashboardLayout({
 }) {
   const currentUser = await getCurrentUser();
   if (!currentUser) {
-    return null;
+    return redirect("/auth/signin");
   }
 
   return (

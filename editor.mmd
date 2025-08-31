@@ -1,0 +1,84 @@
+sequenceDiagram
+    participant User
+    participant OurSite as Our Site (Next.ts)
+    participant Supabase
+    participant Engine
+    participant Groq
+    participant Storage
+    participant EmailService as Email Service
+
+    %% -------- Authentication ----------
+    User->>OurSite: Open site
+    OurSite->>Supabase: Verify session
+    alt Authenticated
+        Supabase-->>OurSite: Valid session
+        OurSite-->>User: Show Editor (Workflow Builder)
+    else Not Authenticated
+        Supabase-->>OurSite: No session
+        OurSite-->>User: Redirect to Login
+    end
+
+    %% -------- Start Workflow ----------
+    User->>OurSite: Add & connect nodes
+    User->>OurSite: Click "Execute Workflow"
+    OurSite->>Engine: Trigger execution
+
+    Engine->>Supabase: Save workflow state (status=running)
+
+    %% -------- Node Execution ----------
+    loop For each node
+        Engine->>Engine: Load node + inputs
+
+        alt Node type = "readFile"
+            Engine->>Storage: Read file
+            Storage-->>Engine: File contents
+
+        else Node type = "summarize"
+            Engine->>Groq: Summarize text
+            alt Success
+                Groq-->>Engine: Summary result
+            else Failure
+                Groq-->>Engine: Error response
+                Engine->>Supabase: Save status=error
+                Engine-->>OurSite: Summarization error
+                OurSite-->>User: Show error
+            end
+
+        else Node type = "email"
+            Engine->>Supabase: Fetch user email settings
+            Engine->>Engine: Prepare summary + report link
+            Engine->>EmailService: Send email (to, subject, body, attachments)
+            alt Success
+                EmailService-->>Engine: Email sent confirmation
+            else Failure
+                EmailService-->>Engine: Email failed
+                Engine->>Supabase: Save status=error
+                Engine-->>OurSite: Email sending error
+                OurSite-->>User: Show "Email failed"
+            end
+
+        else Node type = "report"
+            Engine->>Storage: Generate report (PDF/Docx)
+            Storage-->>Engine: Report URL
+            alt Report URL missing
+                Engine->>Supabase: Save status=error
+                Engine-->>OurSite: Report error
+                OurSite-->>User: Show "Report generation failed"
+            end
+        end
+
+        Engine->>Supabase: Save intermediate state (executionProgress)
+        Supabase-->>Engine: OK
+    end
+
+    %% -------- Finalize Workflow ----------
+    alt All nodes succeed
+        Engine->>Supabase: Save workflow (status=success, stats, nodes, edges)
+        Supabase-->>Engine: Confirmation
+        Engine-->>OurSite: Success confirmation
+        OurSite-->>User: Show "Workflow executed successfully"
+    else Any node fails
+        Engine->>Supabase: Save workflow (status=error, stats)
+        Engine-->>OurSite: Execution error
+        OurSite-->>User: Display error
+    end

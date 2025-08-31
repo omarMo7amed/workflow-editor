@@ -1,0 +1,69 @@
+erDiagram
+    users {
+        uuid id PK
+        text email
+        timestamptz created_at
+        timestamptz updated_at
+        text avatar_url
+    }
+
+    workflows {
+        uuid id PK
+        uuid user_id FK
+        text name
+        text description
+        jsonb nodes
+        jsonb edges
+        jsonb settings
+        timestamptz created_at
+        timestamptz updated_at
+        text status
+        timestamptz last_run_at
+    }
+
+    execution_logs {
+        uuid workflow_id FK
+        uuid user_id FK
+        timestamptz started_at
+        timestamptz finished_at
+        uuid node_id
+        text node_label
+        text status
+        text error_message
+        text output
+        int4 duration
+        text file_name
+    }
+
+    workflow_stats {
+        uuid id PK
+        int4 success
+        int4 error
+        uuid workflow_id FK
+        numeric duration
+        int4 total
+        uuid user_id FK
+    }
+
+    user_files {
+        uuid id PK
+        uuid user_id FK
+        text filename
+        text original_filename
+        int8 file_size
+        text mime_type
+        text storage_path
+        uuid workflow_id FK
+        uuid node_id
+        timestamptz uploaded_at
+    }
+
+    %% Relationships
+    users ||--o{ workflows : "owns"
+    users ||--o{ execution_logs : "has"
+    users ||--o{ workflow_stats : "has"
+    users ||--o{ user_files : "uploads"
+
+    workflows ||--o{ execution_logs : "produces"
+    workflows ||--o{ workflow_stats : "aggregates"
+    workflows ||--o{ user_files : "uses"

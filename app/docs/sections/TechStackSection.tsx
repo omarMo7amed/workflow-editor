@@ -1,10 +1,6 @@
-import {
-  Integrations,
-  Libraries,
-  Technologies,
-} from "@/app/src/_utils/constants";
-import TechItem from "../components/TechItem";
-import { TechnologiesTypes } from "@/app/src/_types/types";
+import { Integrations, Libraries, Technologies } from "../../_utils/constants";
+import TechItem from "../../_components/docs/TechItem";
+import { TechnologiesTypes } from "../../_types/types";
 
 export default function TechStack() {
   return (

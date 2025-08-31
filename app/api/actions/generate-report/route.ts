@@ -1,63 +1,112 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from "next/server";
-import { tmpdir } from "os";
-import path from "path";
-import fs from "fs/promises";
-import PDFDocument from "pdfkit";
 import { Document, Packer, Paragraph } from "docx";
 import { unparse } from "papaparse";
+import { getCurrentUser } from "../../../_lib/auth/actions";
+import { createClient } from "../../../_lib/supabase/server";
+import { uploadReportByWorkflow } from "../../../_lib/data-service";
+import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
+import { getReportFileName } from "../../../_utils/helper";
 
-async function writePDF(filePath: string, content: string) {
-  const doc = new PDFDocument();
-  const stream = (await import("node:fs")).createWriteStream(filePath);
-  doc.pipe(stream);
-  doc.fontSize(14).text("Summary Report", { underline: true });
-  doc.moveDown().fontSize(12).text(content);
-  doc.end();
-  await new Promise<void>((res) => stream.on("finish", res));
+async function makePDF(content: string): Promise<Buffer> {
+  const pdfDoc = await PDFDocument.create();
+
+  const page = pdfDoc.addPage([595.28, 841.89]);
+
+  const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+
+  const titleSize = 18;
+  const contentSize = 12;
+
+  page.drawText("Summary Report", {
+    x: 50,
+    y: page.getHeight() - 80,
+    size: titleSize,
+    font,
+    color: rgb(0, 0, 0),
+  });
+
+  page.drawText(content, {
+    x: 50,
+    y: page.getHeight() - 120,
+    size: contentSize,
+    font,
+    color: rgb(0, 0, 0),
+    lineHeight: 16,
+    maxWidth: 500,
+  });
+
+  const pdfBytes = await pdfDoc.save();
+
+  return Buffer.from(pdfBytes);
 }
 
-async function writeDOCX(filePath: string, content: string) {
+async function makeDOCX(content: string): Promise<Buffer> {
   const doc = new Document({
     sections: [
       { children: [new Paragraph("Summary Report"), new Paragraph(content)] },
     ],
   });
-  const buffer = await Packer.toBuffer(doc);
-  await fs.writeFile(filePath, buffer);
+  return Buffer.from(await Packer.toBuffer(doc));
 }
 
-async function writeCSV(filePath: string, content: string) {
+async function makeCSV(content: string): Promise<Buffer> {
   const rows = content.split("\n").map((l) => [l.replace(/^[-*\s]+/, "")]);
   const csv = unparse(rows);
-  await fs.writeFile(filePath, csv, "utf8");
+  return Buffer.from(csv, "utf8");
 }
 
 export async function POST(req: NextRequest) {
+  const currentUser = await getCurrentUser();
+  if (!currentUser)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const supabase = await createClient();
+  if (!supabase)
+    return NextResponse.json(
+      { error: "Supabase client not initialized" },
+      { status: 500 }
+    );
+
   try {
-    const { summary, format } = (await req.json()) as {
+    const { summary, format, workflowId } = (await req.json()) as {
       summary: string;
       format: "CSV" | "PDF" | "DOCX";
+      workflowId: string;
     };
-    const id = `${Date.now()}`;
-    const outDir = path.join(tmpdir(), "reports");
-    await fs.mkdir(outDir, { recursive: true });
 
-    const fileMap = {
-      PDF: path.join(outDir, `report-${id}.pdf`),
-      DOCX: path.join(outDir, `report-${id}.docx`),
-      CSV: path.join(outDir, `report-${id}.csv`),
-    } as const;
+    if (!summary || !format || !workflowId) {
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 }
+      );
+    }
 
-    const outPath = fileMap[format];
+    if (format !== "CSV" && format !== "PDF" && format !== "DOCX") {
+      return NextResponse.json(
+        { error: "Invalid format specified" },
+        { status: 400 }
+      );
+    }
 
-    if (format === "PDF") await writePDF(outPath, summary);
-    if (format === "DOCX") await writeDOCX(outPath, summary);
-    if (format === "CSV") await writeCSV(outPath, summary);
+    let buffer: Buffer;
+    if (format === "PDF") buffer = await makePDF(summary);
+    else if (format === "DOCX") buffer = await makeDOCX(summary);
+    else buffer = await makeCSV(summary);
 
-    const downloadUrl = `/api/files?path=${encodeURIComponent(outPath)}`;
-    return NextResponse.json({ downloadUrl });
+    const fileName = getReportFileName(summary, format);
+
+    const { reportUrl } = await uploadReportByWorkflow(
+      workflowId,
+      currentUser.id,
+      buffer,
+      fileName,
+      format
+    );
+
+    return NextResponse.json({ reportUrl }, { status: 200 });
   } catch (e: any) {
+    console.error("Report generation error:", e);
     return NextResponse.json(
       { error: e.message || String(e) },
       { status: 500 }

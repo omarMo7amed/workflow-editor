@@ -2,7 +2,6 @@
 "use client";
 
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
 import {
   addEdge,
   applyEdgeChanges,
@@ -18,51 +17,52 @@ import type {
   ExecutionLog,
   NodeStatus,
   NodeType,
-} from "../src/_types/types";
-import { calcCoordinatesOfNode, getInitialState } from "../src/_utils/helper";
-import { initialEdges, initialNodes } from "../src/_utils/constants";
-<<<<<<< HEAD
+  UploadedFile,
+} from "../_types/types";
 import {
+  calcCoordinatesOfNode,
+  createNode,
+  downloadReport,
+  getInitialState,
   handleEmail,
   handleReadFile,
   handleReport,
   handleSummarize,
-} from "../src/_lib/workflows/actions";
-=======
-import toast from "react-hot-toast";
-import { supabase } from "@/lib/supabase";
->>>>>>> 72c87914f6972d14068f41812ff9f34fbeea407a
+} from "../_utils/helper";
+
+import { useWorkflowStore } from "./workflowStore";
+import {
+  createExecutionLog,
+  getExecutionsLogsByWorkflow,
+  getFilesByWorkflowId,
+  getWorkflowStats,
+  updateWorkflowStats,
+} from "../_lib/data-service";
+import { STARTNODE } from "../_utils/constants";
+import { summary } from "framer-motion/client";
 
 interface ContextMenu<T> {
   position: { x: number; y: number };
   item: T;
 }
 
-// data:{
-//   id: string;
-//   label: string;
-//   type: NodeType;
-//   description: string;
-//   choosedFile: string;
-//   output: string | File;
-//   reportFormat: "PDF";
-//   status: "idle" | "pending" | "running" | "success" | "error";
-// }
-
 interface FlowState {
   nodeMap: Map<string, Node>;
   edgeMap: Map<string, Edge>;
+  currentNodeId: string | null;
   nodeIdCounter: number;
-  uploadedFiles: File[];
+  uploadedFiles: UploadedFile[];
+  edgeIdCounter: number;
   stats: { success: number; error: number; duration: number; total: number };
   currentExecutedNode: Node | null;
   nodesLength: number;
+  isLoading: boolean;
   noteIdCounter: number;
   executionProgress: number;
   isExecuting: boolean;
   mode: EditorMode;
-  reservedFilesByNode: Map<string, string>;
-  reservedFilesByFile: Map<string, string>;
+  reservedFilesByNode: Map<string, string>; // nodeId -> fileName
+  reservedFilesByFile: Map<string, string>; // fileName -> nodeId
   labelCounters: Record<string, number>;
   editingNode: Node | null;
   executions: ExecutionLog[];
@@ -91,40 +91,90 @@ interface FlowState {
 
   changeEdgeType: (id: string, newType: EdgeType) => void;
   updateNodeStatus: (id: string, status: NodeStatus) => void;
+  loadWorkflow: (workflowId: string) => Promise<void>;
 
   startExecution: (nodeId: string) => string;
   finishExecution: (
     executionId: string,
     status: NodeStatus,
-    output?: any
+    output: any | null,
+    errorMessage: string | null
   ) => void;
-
+  setIsLoading: (value: boolean) => void;
   setEdgeContext: (context: ContextMenu<Edge>) => void;
   setNodeContext: (context: ContextMenu<Node>) => void;
   setExecutionProgress: (value: number) => void;
   setEditingNode: (node: Node | null) => void;
-  setUploadedFiles: (files: File[]) => void;
+  setUploadedFiles: (files: UploadedFile[]) => void;
   setIsExecuting: (value: boolean) => void;
   setMode: (mode: EditorMode) => void;
+  setCurrentNodeId: (id: string | null) => void;
 
-  executeWorkflow: () => Promise<void>;
+  executeNode: (
+    id: string
+  ) => Promise<{ data: string | null; error: string | null }>;
+  executeWorkflow: () => Promise<{
+    data: string | null;
+    error: string | null;
+  } | void>;
   resetWorkflowExecution: () => void;
 
   clearContexts: () => void;
   clearWorkflow: () => void;
+
+  serializeFlowState: () => {
+    nodes: Node[];
+    edges: Edge[];
+    settings: {
+      nodeIdCounter: number;
+      edgeIdCounter: number;
+      noteIdCounter: number;
+      executionProgress: number;
+      labelCounters: Record<string, number>;
+    };
+  };
 }
 
-export const useFlowStore = create<FlowState>()(
-  persist(
-    (set, get) => {
-  const nodeMap = new Map(initialNodes.map((n) => [n.id, n]));
-  const edgeMap = new Map(initialEdges.map((e) => [e.id, e]));
-
+export const useFlowStore = create<FlowState>((set, get) => {
   return {
-    nodeMap,
-    edgeMap,
-
     ...getInitialState(),
+
+    loadWorkflow: async (workflowId: string) => {
+      const workflow = useWorkflowStore.getState().currentWorkflow;
+      if (!workflow || workflow.id !== workflowId) {
+        console.warn(
+          "Workflow not loaded in workflowStore. You might want to fetch it first."
+        );
+        return;
+      }
+
+      get().clearWorkflow();
+      get().clearContexts();
+      get().setIsLoading(true);
+      const settings = workflow.settings || {};
+
+      const nodeMap = new Map(workflow?.nodes?.map((n: Node) => [n.id, n]));
+      const edgeMap = new Map(workflow?.edges?.map((e: Edge) => [e.id, e]));
+
+      if (!nodeMap.has("1")) nodeMap.set(STARTNODE.id, STARTNODE);
+
+      const uploadedFiles = await getFilesByWorkflowId(workflowId);
+      const executions = await getExecutionsLogsByWorkflow(workflowId);
+      const stats = await getWorkflowStats(workflowId);
+
+      get().setIsLoading(false);
+
+      set({
+        ...getInitialState(),
+        ...settings,
+        nodeMap,
+        edgeMap,
+        uploadedFiles,
+        executions,
+        stats,
+        nodesLength: Math.max(workflow.nodes?.length || 1, -1),
+      });
+    },
 
     onNodesChange: (changes) => {
       const currentNodes = get().getNodes();
@@ -163,21 +213,7 @@ export const useFlowStore = create<FlowState>()(
               type
             );
 
-          const newNode: Node = {
-            id,
-            type,
-            position: coords,
-            data: {
-              id,
-              label: newLabel,
-              type,
-              description: "",
-              choosedFile: "",
-              extractedText: "",
-              reportFormat: "PDF",
-              status: "idle",
-            },
-          };
+          const newNode: Node = createNode(type, id, newLabel, coords);
 
           const newNodeMap = new Map(state.nodeMap);
           newNodeMap.set(id, newNode);
@@ -191,6 +227,7 @@ export const useFlowStore = create<FlowState>()(
               ? state.noteIdCounter + 1
               : state.noteIdCounter,
             labelCounters: newLabelCounters,
+            nodesLength: isNote ? state.nodesLength : state.nodesLength + 1,
           };
         });
       } catch (e) {
@@ -203,8 +240,6 @@ export const useFlowStore = create<FlowState>()(
         set((state) => {
           const node = state.nodeMap.get(id);
           if (!node) return {};
-
-          const isNote = node.type === "note";
 
           const currentFile = state.reservedFilesByNode.get(id);
           if (currentFile) {
@@ -221,29 +256,13 @@ export const useFlowStore = create<FlowState>()(
               .map((e) => [e.id, e])
           );
 
-          const match = node.data.label.match(/^(.*?)(?: \d+)?$/);
-          const baseLabel = match ? match[1] : node.data.label;
-
           const newLabelCounters = {
             ...state.labelCounters,
           };
 
-          if (newLabelCounters[baseLabel]) {
-            newLabelCounters[baseLabel] = Math.max(
-              newLabelCounters[baseLabel] - 1,
-              0
-            );
-          }
-
           return {
             nodeMap: newNodeMap,
             edgeMap: newEdgeMap,
-            nodeIdCounter: isNote
-              ? state.nodeIdCounter
-              : state.nodeIdCounter - 1,
-            noteIdCounter: isNote
-              ? state.noteIdCounter - 1
-              : state.noteIdCounter,
             labelCounters: newLabelCounters,
             reservedFilesByNode: new Map(state.reservedFilesByNode),
             reservedFilesByFile: new Map(state.reservedFilesByFile),
@@ -290,9 +309,12 @@ export const useFlowStore = create<FlowState>()(
       });
     },
 
-    startExecution: (nodeId) => {
+    startExecution: (nodeId: string) => {
       const node = get().nodeMap.get(nodeId);
+      const workflow = useWorkflowStore.getState().currentWorkflow;
+
       if (!node) throw new Error(`Node with id ${nodeId} not found`);
+      if (!workflow?.id) throw new Error("No workflow loaded");
 
       const executionId = `exec-${Date.now()}`;
       const startedAt = new Date().toISOString();
@@ -301,15 +323,18 @@ export const useFlowStore = create<FlowState>()(
         executions: [
           ...state.executions,
           {
-            id: executionId,
-            nodeId,
-            nodeLabel: node.data.label,
+            id: executionId, // virtual id
+            user_id: workflow.user_id!,
+            workflow_id: workflow.id!,
+            node_id: nodeId,
+            node_label: node.data.label,
+            file_name: node.data.fileName || null,
             status: "running",
-            startedAt,
-            finishedAt: null,
+            error_message: null,
             output: null,
-            choosedFile: node.data.choosedFile || undefined,
             duration: null,
+            started_at: startedAt,
+            finished_at: "",
           },
         ],
       }));
@@ -317,37 +342,57 @@ export const useFlowStore = create<FlowState>()(
       return executionId;
     },
 
-    finishExecution: (executionId, status, output = null) => {
-      set((state) => ({
-        executions: state.executions.map((exec) => {
+    finishExecution: async (
+      executionId: string,
+      status: NodeStatus,
+      output: any | null,
+      errorMessage: string | null
+    ) => {
+      let finishedLog: ExecutionLog | null = null;
+
+      set((state) => {
+        const updated = state.executions.map((exec) => {
           if (exec.id !== executionId) return exec;
 
           const finishedAt = new Date().toISOString();
-          const duration = exec.startedAt
+          const duration = exec.started_at
             ? Math.floor(
                 (new Date(finishedAt).getTime() -
-                  new Date(exec.startedAt).getTime()) /
+                  new Date(exec.started_at).getTime()) /
                   1000
               )
             : null;
 
-          return {
+          finishedLog = {
             ...exec,
             status,
-            finishedAt,
+            finished_at: finishedAt,
             duration,
-            output,
+            output: output ? JSON.stringify(output) : "",
+            error_message: errorMessage,
           };
-        }),
-      }));
+
+          return finishedLog;
+        });
+
+        return { executions: updated };
+      });
+
+      if (finishedLog) {
+        await createExecutionLog(finishedLog);
+      }
     },
 
     addEdge: (edge) =>
       set((state) => {
+        edge.id = `edge-${state.edgeIdCounter + 1}`;
         const newEdges = addEdge(edge, Array.from(state.edgeMap.values()));
         const newEdgeMap = new Map(newEdges.map((e) => [e.id, e]));
 
-        return { edgeMap: newEdgeMap };
+        return {
+          edgeMap: newEdgeMap,
+          edgeIdCounter: state.edgeIdCounter + 1,
+        };
       }),
 
     deleteEdge: (id) =>
@@ -423,6 +468,8 @@ export const useFlowStore = create<FlowState>()(
 
     setMode: (mode) => set({ mode }),
 
+    setIsLoading: (value) => set({ isLoading: value }),
+
     setEditingNode: (node) => set({ editingNode: node }),
 
     setNodeContext: (context) =>
@@ -451,10 +498,12 @@ export const useFlowStore = create<FlowState>()(
         };
       }),
 
-    setUploadedFiles: (files: File[]) =>
+    setUploadedFiles: (files: UploadedFile[]) =>
       set(() => ({
         uploadedFiles: files,
       })),
+
+    setCurrentNodeId: (id) => set({ currentNodeId: id }),
 
     resetWorkflowExecution: () => {
       const nodes = get()
@@ -477,144 +526,373 @@ export const useFlowStore = create<FlowState>()(
         executions: [],
         nodeMap: new Map(nodes.map((n) => [n.id, n])),
         edgeMap: new Map(edges.map((e) => [e.id, e])),
-        nodesLength: 0,
+        nodesLength: 1,
         stats: { success: 0, error: 0, duration: 0, total: 0 },
         currentExecutedNode: null,
       });
     },
 
     executeWorkflow: async () => {
+      const workflow = useWorkflowStore.getState().currentWorkflow;
+      if (workflow?.id === undefined) {
+        set({ isExecuting: false });
+        throw new Error("No workflow loaded for execution");
+      }
+
+      const nodes = get()
+        .getNodes()
+        .filter((n) => n.data.type !== "note");
+
+      if (nodes.length <= 1) {
+        return {
+          data: null,
+          error: "No nodes to execute , Start add some actions",
+        };
+      }
+
+      const edges = get().getEdges();
+      const totalSteps = nodes.length;
+
+      if (totalSteps === 0) {
+        set({ isExecuting: false });
+        return;
+      }
+
+      const stats = { success: 0, error: 0, duration: 0, total: totalSteps };
+      const visited = new Set<string>();
+      const startNode = STARTNODE;
+      const startTime = Date.now() - 2;
+      const save = useWorkflowStore.getState().save;
+
+      const saveWorkflow = async (updates: any) => {
+        await save(workflow.id!, {
+          ...updates,
+          settings: {
+            ...workflow.settings,
+            ...(updates.settings || {}),
+          },
+        });
+      };
+
+      const updateProgress = async () => {
+        const progress = Math.round((stats.success / totalSteps) * 100);
+        set({ executionProgress: progress, stats: { ...stats } });
+        await saveWorkflow({
+          status: "running",
+          settings: { executionProgress: progress },
+        });
+      };
+
+      const executeNode = async (nodeId: string, input?: any) => {
+        if (visited.has(nodeId)) return;
+        visited.add(nodeId);
+
+        const node = get().getCurrentNode(nodeId);
+        if (!node) return;
+        get().currentExecutedNode = node;
+
+        const execId = get().startExecution(nodeId);
+        get().updateNodeStatus(nodeId, "running");
+
+        try {
+          let result = input;
+          if (node.data.output) {
+            result = node.data.output;
+            get().updateNodeStatus(nodeId, "running");
+            await new Promise((res) => setTimeout(res, 1000));
+          } else {
+            switch (node.data.type) {
+              case "readFile":
+                if (!node.data.filePath) {
+                  set({ isExecuting: false });
+                  get().updateNodeStatus(nodeId, "error");
+                  get().finishExecution(
+                    execId,
+                    "error",
+                    null,
+                    "File path is required"
+                  );
+                  stats.error++;
+                  return;
+                }
+                result = await handleReadFile(node.data.filePath);
+                break;
+
+              case "summarize":
+                if (!node.data.input && !result) {
+                  set({ isExecuting: false });
+                  get().updateNodeStatus(nodeId, "error");
+                  get().finishExecution(
+                    execId,
+                    "error",
+                    null,
+                    "No input text provided for summarization"
+                  );
+                  stats.error++;
+                  return;
+                }
+                result = await handleSummarize(result ?? node.data.input);
+                if (!result) {
+                  set({ isExecuting: false });
+                  get().updateNodeStatus(nodeId, "error");
+                  get().finishExecution(
+                    execId,
+                    "error",
+                    null,
+                    "Summarization failed"
+                  );
+                  stats.error++;
+                  return;
+                }
+
+                break;
+
+              case "email": {
+                let reportUrl =
+                  typeof result === "object" ? result.reportUrl : null;
+
+                if (!node.data.to) {
+                  get().updateNodeStatus(nodeId, "error");
+                  get().finishExecution(
+                    execId,
+                    "error",
+                    null,
+                    "No email address provided"
+                  );
+                  stats.error++;
+                  return;
+                }
+
+                if (!reportUrl) {
+                  const { reportUrl: fallback } = await handleReport(
+                    node.data.reportFormat || "PDF",
+                    result,
+                    workflow.id!
+                  );
+
+                  if (!fallback) {
+                    get().updateNodeStatus(nodeId, "error");
+                    get().finishExecution(
+                      execId,
+                      "error",
+                      null,
+                      "No report URL generated"
+                    );
+                    stats.error++;
+                    return;
+                  }
+
+                  reportUrl = fallback;
+                }
+
+                await handleEmail(node.data.to, {
+                  summary: typeof result === "string" ? result : result.summary,
+                  reportUrl,
+                });
+
+                result = {
+                  summary: typeof result === "string" ? result : result.summary,
+                  reportUrl,
+                };
+                break;
+              }
+
+              case "report": {
+                let reportUrl = null;
+                const report = await handleReport(
+                  node.data.reportFormat || "PDF",
+                  result,
+                  workflow.id!
+                );
+
+                reportUrl = report?.reportUrl;
+
+                if (!reportUrl) {
+                  get().updateNodeStatus(nodeId, "error");
+                  get().finishExecution(
+                    execId,
+                    "error",
+                    null,
+                    "No report URL generated"
+                  );
+                  stats.error++;
+                  return;
+                }
+
+                result = { reportUrl, summary: result };
+
+                break;
+              }
+
+              default:
+                console.warn(`Unknown node type: ${node.data.type}`);
+            }
+          }
+          get().editNode(nodeId, { output: result });
+          get().updateNodeStatus(nodeId, "success");
+          get().finishExecution(execId, "success", result, null);
+
+          stats.success++;
+          await updateProgress();
+
+          // continue to adjacent nodes
+          const children = edges.filter((e) => e.source === nodeId);
+          for (const child of children) {
+            get().changeEdgeType(child.id, "running");
+            await executeNode(child.target, result);
+            get().changeEdgeType(child.id, "done");
+          }
+        } catch (err: any) {
+          console.error(`Node ${nodeId} failed:`, err);
+          get().updateNodeStatus(nodeId, "error");
+          get().finishExecution(execId, "error", null, err.message);
+
+          stats.error++;
+          set({ stats: { ...stats } });
+
+          await saveWorkflow({
+            status: "error",
+            settings: { executionProgress: get().executionProgress },
+          });
+        }
+      };
+
       try {
         set({
           isExecuting: true,
           executionProgress: 0,
           executions: [],
-          stats: { success: 0, error: 0, duration: 0, total: 0 },
+          stats: { ...stats },
         });
 
-        const nodes = get()
-          .getNodes()
-          .filter((n) => n.data.type !== "note");
+        await saveWorkflow({
+          status: "running",
+          last_run_at: new Date().toISOString(),
+        });
+
+        if (startNode) await executeNode(startNode.id);
+        const updatedNodes = get().getNodes();
+        const updatedEdges = get().getEdges();
+
+        // finish workflow
+        stats.duration = Math.max(
+          0,
+          Math.floor((Date.now() - startTime) / 1000) - 2
+        );
+        const finalStatus = stats.error > 0 ? "error" : "success";
+        const progress = Math.round((stats.success / totalSteps) * 100);
+
+        set({ stats: { ...stats }, executionProgress: progress });
+
+        await saveWorkflow({
+          status: finalStatus,
+          last_run_at: new Date().toISOString(),
+          settings: {
+            executionProgress: progress,
+            labelCounters: get().labelCounters,
+            nodeIdCounter: get().nodeIdCounter,
+            edgeIdCounter: get().edgeIdCounter,
+            noteIdCounter: get().noteIdCounter,
+          },
+          nodes: updatedNodes,
+          edges: updatedEdges,
+        });
+
+        await updateWorkflowStats(workflow.id, stats);
+        if (!stats.error && stats.success === totalSteps)
+          return { data: "Workflow executed successfully", error: null };
+      } catch (err) {
+        console.error("Workflow execution failed:", err);
+      } finally {
+        set({ isExecuting: false });
+      }
+    },
+
+    executeNode: async (id: string) => {
+      const node = get().getCurrentNode(id);
+      const workflowId = useWorkflowStore.getState().currentWorkflow?.id;
+      if (!node) throw new Error(`Node with id ${id} not found`);
+      if (workflowId === undefined) {
+        return { data: null, error: "No workflow loaded" };
+      }
+
+      get().updateNodeStatus(id, "running");
+
+      try {
+        let result;
+        const nodeType = node.data.type;
         const edges = get().getEdges();
-        const totalSteps = nodes.length;
 
-        if (totalSteps === 0) {
-          set({ isExecuting: false });
-          return;
-        }
+        if (nodeType === "readFile") {
+          if (!node.data.filePath) {
+            get().updateNodeStatus(id, "error");
+            return { data: null, error: "No File Assigned yet" };
+          }
+          result = await handleReadFile(node.data.filePath);
 
-        set({ nodesLength: totalSteps - 1 });
-
-        let startTimes = 0;
-        let previousOutput: string | null = null; // Track output from previous node
-
-        for (let i = 1; i < totalSteps; i++) {
-          const nodeId = nodes[i].id;
-          const currentNode = nodes[i];
-          set({
-            currentExecutedNode: get().getCurrentNode(nodeId),
-          });
-
-          const execId = get().startExecution(nodeId);
-          get().updateNodeStatus(nodeId, "running");
-
-          edges.forEach((edge) =>
-            edge.target === nodeId
-              ? get().changeEdgeType(edge.id, "running")
-              : edge
-          );
-
-          const start = Date.now();
-          let result;
-          const nodeType = currentNode.data.type;
-
-          try {
-            if (nodeType === "readFile") {
-              result = await handleReadFile(currentNode);
-              previousOutput = result; // Store for next node
-            } else if (nodeType === "summarize") {
-              if (!previousOutput) {
-                throw new Error("No input text for summarize node");
-              }
-              result = await handleSummarize(currentNode, previousOutput);
-              previousOutput = result; // Store for next node
-            } else if (nodeType === "email") {
-              const content = previousOutput || "No content available";
-              result = await handleEmail(currentNode, content);
-            } else if (nodeType === "report") {
-              const content = previousOutput || "No content available";
-              result = await handleReport(currentNode, content);
-            } else {
-              console.warn(`Unknown node type: ${nodeType}`);
-              result = "Unknown node type";
-            }
-
-            const duration = Date.now() - start;
-            startTimes += duration;
-
-            if (nodeType === "readFile" && result) {
-              get().editNode(nodeId, { extractedText: result });
-            }
-
-            get().updateNodeStatus(nodeId, "success");
-            get().finishExecution(execId, "success", result);
-
-            // Update stats
-            set((state) => {
-              const success = state.stats.success + 1;
-              const total = state.stats.total + 1;
-              const duration = startTimes / 1000;
-
-              return {
-                stats: {
-                  ...state.stats,
-                  success,
-                  total,
-                  duration,
-                },
-              };
-            });
-          } catch (error) {
-            console.error(`Node ${nodeId} execution failed:`, error);
-
-            get().updateNodeStatus(nodeId, "error");
-            get().finishExecution(execId, "error", null);
-
-            set((state) => ({
-              stats: {
-                ...state.stats,
-                error: state.stats.error + 1,
-                total: state.stats.total + 1,
-              },
-            }));
-
-            // Continue with next node even if current fails
+          if (!result) {
+            get().updateNodeStatus(id, "error");
+            return { data: null, error: "File is empty or not found" };
           }
 
-          set({ executionProgress: (i / (totalSteps - 1)) * 100 });
+          get().editNode(id, { output: result });
+        } else if (nodeType === "summarize") {
+          if (!node.data.input) {
+            get().updateNodeStatus(id, "error");
+            return { data: null, error: "No Text Provided to Summarize" };
+          }
+          result = await handleSummarize(node.data.input);
+
+          if (!result) {
+            get().updateNodeStatus(id, "error");
+            return { data: null, error: "Summarization failed" };
+          }
+          get().editNode(id, { output: result });
+        } else if (nodeType === "email") {
+          if (!node.data.to) {
+            get().updateNodeStatus(id, "error");
+            return { data: null, error: "No email address provided" };
+          }
+          if (!node.data.input) {
+            get().updateNodeStatus(id, "error");
+            return { data: null, error: "No Data Provided to Send" };
+          }
+          result = await handleEmail(node.data.to, node.data.input);
+          if (!result) {
+            get().updateNodeStatus(id, "error");
+            return { data: null, error: "Email sending failed" };
+          }
+        } else if (nodeType === "report") {
+          result = await handleReport(
+            node.data.reportFormat || "PDF",
+            node.data.input,
+            workflowId
+          );
+          if (!result?.reportUrl) {
+            get().updateNodeStatus(id, "error");
+            return { data: null, error: "No Report URL Generated" };
+          }
+          await downloadReport(result.reportUrl);
+        } else {
+          return { data: null, error: "Unknown Node Type" };
         }
 
-        // Mark all edges as done
-        const doneEdges = edges.map((edge) => ({
-          ...edge,
-          data: { ...edge.data, edgeType: "done" },
-        }));
+        // pass output to children (only in-memory)
+        const children = edges.filter((e) => e.source === id);
+        for (const child of children) {
+          const targetNode = get().getCurrentNode(child.target);
+          if (!targetNode) continue;
+          get().editNode(child.target, { input: result });
+        }
 
-        set({
-          isExecuting: false,
-          edgeMap: new Map(doneEdges.map((e) => [e.id, e])),
-        });
-      } catch (e) {
-        console.error("Workflow execution failed:", e);
-        set((state) => ({
-          isExecuting: false,
-          stats: {
-            ...state.stats,
-            error: state.stats.error + 1,
-            total: state.stats.total + 1,
-          },
-        }));
-        throw new Error(e as string | undefined);
+        get().updateNodeStatus(id, "success");
+        await useWorkflowStore.getState().saveCurrentState(workflowId);
+
+        return { error: null, data: node.data.label };
+      } catch (error: any) {
+        console.error(`Node ${id} execution failed:`, error);
+        get().updateNodeStatus(id, "error");
+        return { error: error.message || "something went wrong", data: null };
       }
     },
 
@@ -622,115 +900,42 @@ export const useFlowStore = create<FlowState>()(
       set(() => ({ nodeContext: null, edgeContext: null, editingNode: null })),
 
     clearWorkflow: () => {
+      const nodeMap = new Map<string, Node>();
+
+      nodeMap.set(STARTNODE.id, STARTNODE);
+
       set(() => {
         return {
-          nodeMap: new Map(initialNodes.map((node) => [node.id, node])),
-          edgeMap: new Map(initialEdges.map((edge) => [edge.id, edge])),
           ...getInitialState(),
+          nodeMap,
         };
       });
     },
-  };
-<<<<<<< HEAD
-});
 
-// saveWorkflow: async (name?: string) => {
-//   const state = get();
-//   set({ isSaving: true });
+    serializeFlowState: () => {
+      const {
+        nodeIdCounter,
+        noteIdCounter,
+        edgeIdCounter,
+        executionProgress,
+        labelCounters,
+        nodeMap,
+        edgeMap,
+      } = get();
 
-//   try {
-//     const workflowData = {
-//       name: name || state.currentWorkflowName,
-//       nodes: state.getNodes(),
-//       edges: state.getEdges(),
-//       settings: {
-//         nodeIdCounter: state.nodeIdCounter,
-//         noteIdCounter: state.noteIdCounter,
-//         labelCounters: state.labelCounters,
-//       },
-//     };
-
-//     const url = state.currentWorkflowId
-//       ? `/api/workflows/${state.currentWorkflowId}`
-//       : "/api/workflows";
-
-//     const method = state.currentWorkflowId ? "PUT" : "POST";
-
-//     const response = await fetch(url, {
-//       method,
-//       headers: { "Content-Type": "application/json" },
-//       body: JSON.stringify(workflowData),
-//     });
-
-//     if (!response.ok) {
-//       const error = await response.json();
-//       throw new Error(error.error || "Failed to save workflow");
-//     }
-
-//     const result = await response.json();
-
-//     set({
-//       currentWorkflowId: result.workflow.id,
-//       currentWorkflowName: result.workflow.name,
-//       isWorkflowSaved: true,
-//       isSaving: false,
-//     });
-//   } catch (error: any) {
-//     set({ isSaving: false });
-//     throw error;
-//   }
-// },
-
-// loadWorkflow: async (workflowId: string) => {
-//   try {
-//     const response = await fetch(`/api/workflows/${workflowId}`);
-
-//     if (!response.ok) {
-//       const error = await response.json();
-//       throw new Error(error.error || "Failed to load workflow");
-//     }
-
-//     const result = await response.json();
-//     const workflow = result.workflow;
-
-//     // Restore workflow state
-//     const nodeMap = new Map(workflow.nodes.map((n: Node) => [n.id, n]));
-//     const edgeMap = new Map(workflow.edges.map((e: Edge) => [e.id, e]));
-
-//     set({
-//       nodeMap,
-//       edgeMap,
-//       currentWorkflowId: workflow.id,
-//       currentWorkflowName: workflow.name,
-//       isWorkflowSaved: true,
-//       nodeIdCounter: workflow.settings?.nodeIdCounter || 1,
-//       noteIdCounter: workflow.settings?.noteIdCounter || 0,
-//       labelCounters: workflow.settings?.labelCounters || {},
-//     });
-//   } catch (error: any) {
-//     throw error;
-//   }
-// },
-=======
+      const nodes = Array.from(nodeMap.values());
+      const edges = Array.from(edgeMap.values());
+      return {
+        nodes,
+        edges,
+        settings: {
+          edgeIdCounter,
+          nodeIdCounter,
+          noteIdCounter,
+          executionProgress,
+          labelCounters,
+        },
+      };
     },
-    {
-      name: 'workflow-storage',
-      partialize: (state) => ({
-        nodeMap: Array.from(state.nodeMap.entries()),
-        edgeMap: Array.from(state.edgeMap.entries()),
-        nodeIdCounter: state.nodeIdCounter,
-        noteIdCounter: state.noteIdCounter,
-        labelCounters: state.labelCounters,
-        uploadedFiles: state.uploadedFiles,
-      }),
-      onRehydrateStorage: () => (state) => {
-        if (state) {
-          // Convert arrays back to Maps
-          state.nodeMap = new Map(state.nodeMap as any);
-          state.edgeMap = new Map(state.edgeMap as any);
-        }
-      },
-    }
-  )
-);
->>>>>>> 72c87914f6972d14068f41812ff9f34fbeea407a
+  };
+});

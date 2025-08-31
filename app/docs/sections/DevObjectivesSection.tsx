@@ -1,6 +1,6 @@
-import { devObjectives } from "@/app/src/_utils/constants";
-import ObjectiveCard from "../components/ObjectiveCard";
-import { DevObjective } from "@/app/src/_types/types";
+import { devObjectives } from "../../_utils/constants";
+import ObjectiveCard from "../../_components/docs/ObjectiveCard";
+import { DevObjective } from "../../_types/types";
 
 export default function DevObjectivesSection() {
   return (

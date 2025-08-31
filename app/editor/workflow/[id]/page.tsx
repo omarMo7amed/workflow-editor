@@ -1,9 +1,10 @@
-export default async function Page({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = await params;
+import EditorLayout from "../../../_components/Editor/EditorLayout";
+import { getWorkflowById } from "../../../_lib/data-service";
+import { Workflow } from "../../../_types/types";
 
-  return <div>{id}</div>;
+export default async function Page({ params }: { params: { id: string } }) {
+  const { id } = await params;
+  const workflow: Partial<Workflow> = await getWorkflowById(id);
+
+  return <EditorLayout workflow={workflow} />;
 }

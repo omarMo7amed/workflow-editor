@@ -1,19 +1,26 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// app/api/actions/summarize/route.ts
-import { NextRequest, NextResponse } from "next/server";
-import OpenAI from "openai";
 
-const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
+import { NextRequest, NextResponse } from "next/server";
+import { groq } from "../../../_lib/groq/groq";
 
 export async function POST(req: NextRequest) {
   try {
     const { text } = await req.json();
 
-    const completion = await client.chat.completions.create({
-      model: "gpt-4o-mini",
+    const completion = await groq.chat.completions.create({
+      model: "llama3-8b-8192",
       messages: [
-        { role: "system", content: "You are a concise summarizer." },
-        { role: "user", content: `Summarize in 5 bullet points:\n\n${text}` },
+        {
+          role: "system",
+          content:
+            "You are a concise summarizer for my project workflow-editor.",
+        },
+        {
+          role: "user",
+          content: `Summarize the following text in 10 bullet points. 
+          The output must be plain text only (no special characters, no markdown, no tables).
+          Make sure the content is compatible to be saved as PDF, DOCX, or CSV:\n\n${text}`,
+        },
       ],
       temperature: 0.2,
     });
@@ -21,6 +28,7 @@ export async function POST(req: NextRequest) {
     const summary = completion.choices[0]?.message?.content?.trim() ?? "";
     return NextResponse.json({ summary });
   } catch (e: any) {
+    console.error("Error summarizing text:", e);
     return NextResponse.json(
       { error: e.message || String(e) },
       { status: 500 }

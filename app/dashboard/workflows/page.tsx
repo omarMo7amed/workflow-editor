@@ -1,5 +1,5 @@
-import { getCurrentUser } from "@/app/src/_lib/auth/actions";
-import { getWorkflowsByUserId } from "@/app/src/_lib/data-service";
+import { getCurrentUser } from "@/app/_lib/auth/actions";
+import { getWorkflowsByUserId } from "@/app/_lib/data-service";
 import { redirect } from "next/navigation";
 import Workflows from "./Workflows";
 
@@ -9,7 +9,5 @@ export default async function Page() {
     redirect("/auth/signin");
   }
 
-  const workflows = await getWorkflowsByUserId(currentUser.id);
-
-  return <Workflows workflows={workflows} />;
+  return <Workflows />;
 }

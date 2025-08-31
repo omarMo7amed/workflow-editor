@@ -1,4 +1,4 @@
-import TargetAudienceCard from "../components/TargetAudienceCard";
+import TargetAudienceCard from "../../_components/docs/TargetAudienceCard";
 
 export default function WhatIsThisSection() {
   return (
