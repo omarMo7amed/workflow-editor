@@ -104,7 +104,7 @@ export async function POST(req: NextRequest) {
       format
     );
 
-    return NextResponse.json({ reportUrl }, { status: 200 });
+    return NextResponse.json({ data: reportUrl }, { status: 200 });
   } catch (e: any) {
     console.error("Report generation error:", e);
     return NextResponse.json(

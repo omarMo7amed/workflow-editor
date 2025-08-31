@@ -616,6 +616,14 @@ export const useFlowStore = create<FlowState>((set, get) => {
                   return;
                 }
                 result = await handleReadFile(node.data.filePath);
+                if (result.error) {
+                  set({ isExecuting: false });
+                  get().updateNodeStatus(nodeId, "error");
+                  get().finishExecution(execId, "error", null, result.error);
+                  stats.error++;
+                  return;
+                }
+                result = result.data;
                 break;
 
               case "summarize":
@@ -632,18 +640,15 @@ export const useFlowStore = create<FlowState>((set, get) => {
                   return;
                 }
                 result = await handleSummarize(result ?? node.data.input);
-                if (!result) {
+                if (result.error) {
                   set({ isExecuting: false });
                   get().updateNodeStatus(nodeId, "error");
-                  get().finishExecution(
-                    execId,
-                    "error",
-                    null,
-                    "Summarization failed"
-                  );
+                  get().finishExecution(execId, "error", null, result.error);
                   stats.error++;
                   return;
                 }
+
+                result = result.data;
 
                 break;
 
@@ -664,25 +669,20 @@ export const useFlowStore = create<FlowState>((set, get) => {
                 }
 
                 if (!reportUrl) {
-                  const { reportUrl: fallback } = await handleReport(
+                  const data = await handleReport(
                     node.data.reportFormat || "PDF",
                     result,
                     workflow.id!
                   );
 
-                  if (!fallback) {
+                  if (data.error) {
                     get().updateNodeStatus(nodeId, "error");
-                    get().finishExecution(
-                      execId,
-                      "error",
-                      null,
-                      "No report URL generated"
-                    );
+                    get().finishExecution(execId, "error", null, data.error);
                     stats.error++;
                     return;
                   }
 
-                  reportUrl = fallback;
+                  reportUrl = data.data;
                 }
 
                 await handleEmail(node.data.to, {
@@ -699,27 +699,20 @@ export const useFlowStore = create<FlowState>((set, get) => {
 
               case "report": {
                 let reportUrl = null;
-                const report = await handleReport(
+                const data = await handleReport(
                   node.data.reportFormat || "PDF",
                   result,
                   workflow.id!
                 );
 
-                reportUrl = report?.reportUrl;
-
-                if (!reportUrl) {
+                if (data.error) {
                   get().updateNodeStatus(nodeId, "error");
-                  get().finishExecution(
-                    execId,
-                    "error",
-                    null,
-                    "No report URL generated"
-                  );
+                  get().finishExecution(execId, "error", null, data.error);
                   stats.error++;
                   return;
                 }
 
-                result = { reportUrl, summary: result };
+                result = { reportUrl: data.data, summary: result };
 
                 break;
               }
@@ -830,12 +823,12 @@ export const useFlowStore = create<FlowState>((set, get) => {
           }
           result = await handleReadFile(node.data.filePath);
 
-          if (!result) {
+          if (result.error) {
             get().updateNodeStatus(id, "error");
-            return { data: null, error: "File is empty or not found" };
+            return { data: null, error: result.error };
           }
 
-          get().editNode(id, { output: result });
+          get().editNode(id, { output: result.data });
         } else if (nodeType === "summarize") {
           if (!node.data.input) {
             get().updateNodeStatus(id, "error");
@@ -843,11 +836,11 @@ export const useFlowStore = create<FlowState>((set, get) => {
           }
           result = await handleSummarize(node.data.input);
 
-          if (!result) {
+          if (result.error) {
             get().updateNodeStatus(id, "error");
-            return { data: null, error: "Summarization failed" };
+            return { data: null, error: result.error };
           }
-          get().editNode(id, { output: result });
+          get().editNode(id, { output: result.data });
         } else if (nodeType === "email") {
           if (!node.data.to) {
             get().updateNodeStatus(id, "error");
@@ -858,9 +851,9 @@ export const useFlowStore = create<FlowState>((set, get) => {
             return { data: null, error: "No Data Provided to Send" };
           }
           result = await handleEmail(node.data.to, node.data.input);
-          if (!result) {
+          if (result.error) {
             get().updateNodeStatus(id, "error");
-            return { data: null, error: "Email sending failed" };
+            return { data: null, error: result.error };
           }
         } else if (nodeType === "report") {
           result = await handleReport(
@@ -868,9 +861,9 @@ export const useFlowStore = create<FlowState>((set, get) => {
             node.data.input,
             workflowId
           );
-          if (!result?.reportUrl) {
+          if (result.error) {
             get().updateNodeStatus(id, "error");
-            return { data: null, error: "No Report URL Generated" };
+            return { data: null, error: result.error };
           }
           await downloadReport(result.reportUrl);
         } else {
@@ -882,7 +875,7 @@ export const useFlowStore = create<FlowState>((set, get) => {
         for (const child of children) {
           const targetNode = get().getCurrentNode(child.target);
           if (!targetNode) continue;
-          get().editNode(child.target, { input: result });
+          get().editNode(child.target, { input: result.data });
         }
 
         get().updateNodeStatus(id, "success");

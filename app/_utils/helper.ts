@@ -235,11 +235,9 @@ export async function handleReadFile(filePath: string) {
     body: JSON.stringify({ filePath }),
   });
 
-  if (!res.ok) return;
+  const data = await res.json();
 
-  const { text } = await res.json();
-
-  return text;
+  return data;
 }
 
 export async function handleSummarize(inputText: string) {
@@ -249,12 +247,8 @@ export async function handleSummarize(inputText: string) {
     headers: { "Content-Type": "application/json" },
   });
 
-  if (!res.ok) {
-    toast.error("Summarization failed");
-    return;
-  }
-  const { summary } = await res.json();
-  return summary;
+  const data = await res.json();
+  return data;
 }
 
 export async function handleEmail(
@@ -281,12 +275,13 @@ export async function handleEmail(
     headers: { "Content-Type": "application/json" },
   });
 
-  if (!res.ok) {
-    toast.error("Email sending failed ,try again later");
-    return;
+  const data = await res.json();
+
+  if (!data.error) {
+    data.data = body;
   }
 
-  return body;
+  return data;
 }
 
 export async function handleReport(
@@ -301,13 +296,8 @@ export async function handleReport(
   });
 
   const data = await res.json();
-  if (!res.ok) {
-    toast.error("Report generation failed: " + data.error);
-    console.error("Report generation error:", data.error);
-    return { success: false, reportUrl: null };
-  }
 
-  return { success: res.ok, reportUrl: data.reportUrl };
+  return data;
 }
 
 export async function downloadReport(reportUrl: string) {

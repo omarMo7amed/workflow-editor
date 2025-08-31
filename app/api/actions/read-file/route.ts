@@ -6,8 +6,6 @@ import path from "path";
 import { getCurrentUser } from "../../../_lib/auth/actions";
 import { createClient } from "../../../_lib/supabase/server";
 
-export const runtime = "nodejs";
-
 export async function POST(req: Request) {
   const user = await getCurrentUser();
   if (!user) {
@@ -15,6 +13,7 @@ export async function POST(req: Request) {
   }
 
   const { filePath } = await req.json();
+
   if (!filePath) {
     return NextResponse.json(
       { error: "File path is required" },
@@ -41,9 +40,6 @@ export async function POST(req: Request) {
 
   if (ext === ".txt") {
     text = buffer.toString("utf8");
-  } else if (ext === ".pdf") {
-    // const data = await extractPdfText();
-    // text = data;
   } else if (ext === ".docx") {
     const result = await mammoth.extractRawText({ buffer });
     text = result.value;
@@ -54,40 +50,5 @@ export async function POST(req: Request) {
     );
   }
 
-  return NextResponse.json({ text }, { status: 200 });
+  return NextResponse.json({ data: text }, { status: 200 });
 }
-
-// import OpenAI from "openai";
-
-// const openai = new OpenAI({
-//   apiKey: process.env.OPENAI_API_KEY, // Make sure this is set in your env
-// });
-
-// export async function extractPdfText(buffer: Buffer): Promise<string> {
-//   try {
-//     // First: locally parse PDF text
-//     const pdfData = await PdfParse(buffer);
-//     const rawText = pdfData.text;
-
-//     // Then: clean it up with OpenAI (optional)
-//     const response = await openai.chat.completions.create({
-//       model: "gpt-4.1-mini",
-//       messages: [
-//         {
-//           role: "system",
-//           content:
-//             "You are an assistant that extracts clean, structured text from PDFs.",
-//         },
-//         {
-//           role: "user",
-//           content: rawText.slice(0, 12000), // truncate if PDF is too big
-//         },
-//       ],
-//     });
-
-//     return response.choices[0].message?.content ?? rawText;
-//   } catch (err) {
-//     console.error("Error extracting PDF text:", err);
-//     return "";
-//   }
-// }

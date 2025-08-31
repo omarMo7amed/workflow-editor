@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
     });
 
     const summary = completion.choices[0]?.message?.content?.trim() ?? "";
-    return NextResponse.json({ summary });
+    return NextResponse.json({ data: summary });
   } catch (e: any) {
     console.error("Error summarizing text:", e);
     return NextResponse.json(

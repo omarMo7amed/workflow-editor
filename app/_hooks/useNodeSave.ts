@@ -10,8 +10,10 @@ export function useNodeSave(
   state: State,
   dispatch: Dispatch<Action>
 ) {
-  const { editNode, reservedFilesByFile, reservedFilesByNode, getCurrentNode } =
-    useFlowStore();
+  const editNode = useFlowStore((s) => s.editNode);
+  const getCurrentNode = useFlowStore((s) => s.getCurrentNode);
+  const reservedFilesByNode = useFlowStore((s) => s.reservedFilesByNode);
+  const reservedFilesByFile = useFlowStore((s) => s.reservedFilesByFile);
 
   return function save() {
     if (!node || !state.hasChanges) return;
@@ -53,6 +55,8 @@ export function useNodeSave(
         filePath: state.filePath,
       }),
     });
+
+    toast.success("Node saved successfully");
 
     dispatch({ type: "reset", payload: node });
   };
