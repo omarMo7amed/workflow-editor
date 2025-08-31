@@ -14,6 +14,8 @@ export async function signInWithGoogle() {
     },
   });
 
+  console.log("OAuth sign-in data:", data);
+
   if (error) {
     throw new Error(error.message);
   }

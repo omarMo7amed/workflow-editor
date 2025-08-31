@@ -8,6 +8,9 @@ export const metadata = {
     template: "%s",
   },
   description: "A workflow editor to create and manage workflows.",
+  icons: {
+    icon: "/workflow.svg",
+  },
 };
 
 export default function RootLayout({
@@ -17,13 +20,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <link rel="icon" href="/workflow.svg" type="image/svg+xml" />
+      </head>
       <body>
-        <head>
-          <link rel="icon" href="/favicon.ico" />
-        </head>
         <Header />
         <Toaster position="top-right" />
-        <main className="pt-[72.8px] min-h-screen ">{children}</main>
+        <main className="pt-[72.8px] min-h-screen">{children}</main>
       </body>
     </html>
   );
