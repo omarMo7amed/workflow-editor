@@ -52,7 +52,7 @@ function EditorLayout({ workflow }: { workflow: Partial<Workflow> }) {
           <TableOfContents.Body>
             <Load>
               <FileUpload
-                acceptedFileType=".pdf,.doc,.docx,.txt"
+                acceptedFileType=".doc,.docx,.txt"
                 maxFileSize={10}
                 multiple={true}
               />

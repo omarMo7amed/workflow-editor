@@ -23,7 +23,6 @@ import { useWorkflowStore } from "@/app/_store/workflowStore";
 const MAX_TOTAL_FILES = 5;
 
 const acceptedFileTypes: Record<string, string> = {
-  "application/pdf": ".pdf",
   "application/msword": ".doc",
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
     ".docx",
@@ -31,7 +30,7 @@ const acceptedFileTypes: Record<string, string> = {
 };
 
 export function FileUpload({
-  acceptedFileType = ".pdf,.doc,.docx,.txt",
+  acceptedFileType = ".doc,.docx,.txt",
   maxFileSize = 10,
   multiple = true,
 }: FileUploadProps) {
