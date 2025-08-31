@@ -10,7 +10,7 @@ export async function signInWithGoogle() {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
     options: {
-      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
+      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL_PROD}/auth/callback`,
     },
   });
 
@@ -53,7 +53,7 @@ export async function signUp(name: string, email: string, password: string) {
   if (error) {
     throw new Error(error.message);
   }
-  redirect("/auth/signin");
+  redirect("/dashboard/workflows");
 }
 
 export async function signOut() {

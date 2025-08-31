@@ -18,6 +18,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+        <head>
+          <link rel="icon" href="/favicon.ico" />
+        </head>
         <Header />
         <Toaster position="top-right" />
         <main className="pt-[72.8px] min-h-screen ">{children}</main>

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "../supabase/server";
 import { redirect } from "next/navigation";
+import { createAdminClient } from "../supabase/admin";
 
 export async function updateProfile(name: string) {
   const supabase = await createClient();
@@ -115,10 +116,12 @@ export async function deleteAccount() {
   } = await supabase.auth.getUser();
 
   if (userError || !user) {
-    throw new Error("User not authenticated");
+    throw new Error(userError?.message || "User not authenticated");
   }
 
-  const { error } = await supabase.auth.admin.deleteUser(user.id);
+  const supabaseAdmin = await createAdminClient();
+
+  const { error } = await supabaseAdmin.auth.admin.deleteUser(user.id);
 
   if (error) {
     throw new Error(error.message);

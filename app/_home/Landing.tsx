@@ -61,15 +61,16 @@ export default function Landing() {
             workflows
           </motion.p>
 
-          <motion.button
+          <motion.a
             className="bg-slate-900 text-white px-8 py-4 rounded-full font-medium hover:bg-slate-800 transition-all duration-300 inline-flex items-center gap-3 shadow-lg hover:shadow-xl"
             variants={fadeInUp}
+            href="/auth/signin"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            Explore Architecture
+            Get Started
             <ArrowRight className="w-5 h-5" />
-          </motion.button>
+          </motion.a>
         </motion.div>
 
         <motion.div
