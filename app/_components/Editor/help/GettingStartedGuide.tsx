@@ -7,7 +7,7 @@ export default function GettingStartedGuide() {
       icon: <Upload className="h-4 w-4 text-blue-600" />,
       title: "Upload Files",
       description:
-        "Start by uploading files in the Load tab. Supported formats: PDF, DOC, DOCX, TXT. You can upload 5 files up to 10MB each.",
+        "Start by uploading files in the Load tab. Supported formats: DOC, DOCX, TXT. You can upload 5 files up to 10MB each.",
     },
     {
       icon: <FileText className="h-4 w-4 text-blue-600" />,

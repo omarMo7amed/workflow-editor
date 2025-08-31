@@ -98,7 +98,7 @@ export const portfolioValues: PortfolioValueCardProps[] = [
     title: "How This Tool Helps You",
     items: [
       "Visually automate tasks without writing code",
-      "Extract and summarize content from PDFs",
+      "Extract and summarize content from files",
       "Send processed information via email automatically",
       "Use simple drag-and-drop to build your flow",
     ],
@@ -117,7 +117,7 @@ export const portfolioValues: PortfolioValueCardProps[] = [
     id: "smart-ai-features",
     title: "Smart AI Features",
     items: [
-      "Reads PDF content for you instantly",
+      "Reads file content for you instantly",
       "Summarizes long text using OpenAI",
       "Automatically connects one step to another",
       "Provides real-time visual feedback while executing",
@@ -168,7 +168,7 @@ export const Integrations: TechnologiesTypes[] = [
 ];
 
 export const flowDemoSteps = [
-  { icon: FileText, label: "Read PDF", color: "bg-slate-600" },
+  { icon: FileText, label: "Read File", color: "bg-slate-600" },
   { icon: Brain, label: "AI Process", color: "bg-slate-700" },
   { icon: Mail, label: "Send Email", color: "bg-slate-800" },
 ];

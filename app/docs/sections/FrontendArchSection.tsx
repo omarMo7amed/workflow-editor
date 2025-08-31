@@ -51,7 +51,8 @@ export default function FrontendArchSection() {
           <li>
             <strong>Execution and Integration:</strong> Backend Server Actions
             trigger the workflow engine, which integrates with Groq API for
-            summarization and generates reports (PDF/CSV) stored in Supabase.
+            summarization and generates reports (PDF/CSV/DOCX) stored in
+            Supabase.
           </li>
           <li>
             <strong>Real-Time Feedback:</strong> Execution status and results

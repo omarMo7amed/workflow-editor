@@ -30,7 +30,7 @@ const commonErrors = [
       "File too large",
     ],
     solutions: [
-      "Check file format: Only PDF, DOC, DOCX, TXT are supported",
+      "Check file format: Only DOC, DOCX, TXT are supported",
       "Ensure file size is under 10MB",
       "Try refreshing the page and uploading again",
       "Check your internet connection",

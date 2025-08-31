@@ -18,7 +18,7 @@ export default function WhatIsThisSection() {
 
         <p>
           Users can drag and drop nodes representing different actions—from
-          reading PDFs and processing documents to integrating with AI services
+          reading files and processing documents to integrating with AI services
           and sending notifications—to build complex automation pipelines
           without writing code.
         </p>
