@@ -7,6 +7,7 @@ import { notFound } from "next/navigation";
 import { ExecutionLog } from "../_types/types";
 import { SupabaseClient } from "@supabase/supabase-js";
 import { getCurrentUser } from "./auth/actions";
+import { createSafeFilename } from "../_utils/helper";
 
 // GET
 export async function getWorkflowsByUserId(userId: string) {
@@ -91,8 +92,9 @@ export async function uploadFileByWorkflow(
   if (!file || !(file instanceof File)) {
     throw new Error("Invalid file provided");
   }
+  const safeFilename = createSafeFilename(file.name);
 
-  const storagePath = `${userId}/${workflowId}/${file.name}`;
+  const storagePath = `${userId}/${workflowId}/${safeFilename}`;
 
   const { error: uploadError } = await supabase.storage
     .from("user-files")

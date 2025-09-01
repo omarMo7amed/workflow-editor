@@ -38,6 +38,12 @@ export const getInitialState = () => ({
   edgeContext: null,
 });
 
+export function createSafeFilename(filename: string): string {
+  const cleanName = filename.replace(/[\\/]+/g, "_");
+  const noSpaces = cleanName.replace(/\s+/g, "_");
+  return encodeURIComponent(noSpaces);
+}
+
 export function calcCoordinatesOfNode(
   id: number,
   type: string

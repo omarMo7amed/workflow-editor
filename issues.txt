@@ -14,6 +14,9 @@
 
 8) database is not normalized (it's bad but i have the schema to make it follow  3NF)
 
+9) some user upload unvalid fileName it's contain /,\, or any spechial char that throw an error so i create helper function (createSafeFilename)
+
+10) when i click enter in editor it delete it because i use useEnterKey for confirmation modal and it execute it when i click enter even the modal is opened 
 
 
 
