@@ -100,6 +100,10 @@ export function getNodeStatusStyles(status: NodeStatus) {
   };
 }
 
+function containsArabic(text: string): boolean {
+  return /[\u0600-\u06FF]/.test(text);
+}
+
 export function validateFiles(
   files: File[],
   uploadedFiles: UploadedFile[],
@@ -116,6 +120,13 @@ export function validateFiles(
   for (const file of files) {
     const key = `${file.name}-${file.size}`;
     const sizeMB = file.size / (1024 * 1024);
+
+    if (containsArabic(file.name)) {
+      toast.error(
+        "File name contains Arabic characters. Please rename the file."
+      );
+      continue;
+    }
 
     if (!acceptedFileTypes[file.type]) {
       toast.error(`this type not allowed`);

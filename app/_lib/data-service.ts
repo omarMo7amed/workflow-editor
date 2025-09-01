@@ -92,6 +92,7 @@ export async function uploadFileByWorkflow(
   if (!file || !(file instanceof File)) {
     throw new Error("Invalid file provided");
   }
+
   const safeFilename = createSafeFilename(file.name);
 
   const storagePath = `${userId}/${workflowId}/${safeFilename}`;
