@@ -1,0 +1,62 @@
+stateDiagram-v2
+    [*] --> AuthCheck
+
+    %% -------- Authentication --------
+    AuthCheck: Check if user is authenticated
+    AuthCheck --> Login : Not authenticated
+    Login: User logs in / registers
+    Login --> AuthCheck
+    AuthCheck --> Dashboard : Authenticated
+
+    %% -------- Workflow Creation --------
+    Dashboard: Show dashboard
+    Dashboard --> WorkflowCreation : Click 'New Workflow'
+    WorkflowCreation: Create workflow metadata
+    WorkflowCreation --> WorkflowEditing
+    WorkflowEditing: Add / Edit / Connect nodes
+
+    WorkflowEditing --> WorkflowEditing : Continue editing
+    WorkflowEditing --> ExecuteDecision : Click 'Execute Workflow'
+
+    %% -------- Execution --------
+    ExecuteDecision --> Running
+    Running: Engine starts execution
+    Running --> NodeLoop
+
+    state NodeLoop {
+        [*] --> NodeType
+
+        NodeType: Determine node type
+        NodeType --> ReadFile : type = readFile
+        NodeType --> Summarize : type = summarize
+        NodeType --> SendEmail : type = email
+        NodeType --> GenerateReport : type = report
+
+        ReadFile: Read file from storage
+        ReadFile --> NodeType
+
+        Summarize: Summarize text via Groq API
+        Summarize --> NodeType : Success
+        Summarize --> Error : Failure
+
+        SendEmail: Send email with report link
+        SendEmail --> NodeType : Success
+        SendEmail --> Error : Failure
+
+        GenerateReport: Generate report (PDF/CSV/DOCX)
+        GenerateReport --> NodeType : Success
+        GenerateReport --> Error : Failure
+
+        NodeType --> Done : All nodes processed
+        Done --> [*]
+    }
+
+    NodeLoop --> Success : All nodes succeeded
+    NodeLoop --> Error : Any node failed
+
+    %% -------- Final States --------
+    Success: Save status=success in Supabase
+    Error: Save status=error in Supabase
+
+    Success --> [*]
+    Error --> [*]

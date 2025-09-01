@@ -1,34 +1,71 @@
+%%{ init: { 
+  'theme': 'dark',
+  'themeVariables': {
+    'primaryColor': '#3b82f6',
+    'primaryTextColor': '#ffffff',
+    'primaryBorderColor': '#2563eb',
+    'lineColor': '#9ca3af',
+    'secondaryColor': '#10b981',
+    'tertiaryColor': '#f59e0b',
+    'background': '#111827',
+    'mainBkg': '#1f2937',
+    'secondBkg': '#374151',
+    'tertiaryBkg': '#4b5563',
+    'darkMode': true,
+    'c0': '#3b82f6',
+    'c1': '#10b981', 
+    'c2': '#f59e0b',
+    'c3': '#ef4444',
+    'c4': '#8b5cf6',
+    'c5': '#06b6d4',
+    'c6': '#84cc16',
+    'c7': '#f97316'
+  }
+} }%%
 flowchart LR
     %% External Entity
     User[User]
-
+    
     %% Processes
     Frontend((Frontend<br/>Next.ts))
     Backend((Backend<br/>Next.ts API / Server Actions))
     Engine((Workflow Engine))
-
+    
     %% Data Stores
     Supabase[(Supabase<br/>Auth + DB + Storage)]
     Reports[(Reports / Files)]
     Avatars[(Avatars Bucket)]
-
+    
     %% External Service
     Groq[[Groq API<br/>Summarization]]
-
+    
+    %% Styling
+    classDef userClass fill:#3b82f6,stroke:#2563eb,stroke-width:2px,color:#ffffff
+    classDef processClass fill:#10b981,stroke:#059669,stroke-width:2px,color:#ffffff
+    classDef dataClass fill:#f59e0b,stroke:#d97706,stroke-width:2px,color:#ffffff
+    classDef externalClass fill:#ef4444,stroke:#dc2626,stroke-width:2px,color:#ffffff
+    classDef storageClass fill:#8b5cf6,stroke:#7c3aed,stroke-width:2px,color:#ffffff
+    
+    class User userClass
+    class Frontend,Backend,Engine processClass
+    class Supabase dataClass
+    class Reports,Avatars storageClass
+    class Groq externalClass
+    
     %% Data Flows - Auth
     User -->|Login / Register| Frontend
     Frontend -->|Auth API Calls| Backend
     Backend -->|Auth Requests| Supabase
     Supabase -->|Session / User Data| Backend
     Backend -->|Session State| Frontend
-
+    
     %% Workflows CRUD
     User -->|Create / Update / Delete Workflow| Frontend
     Frontend -->|Workflow API Calls| Backend
     Backend -->|Persist Workflow| Supabase
     Supabase -->|Saved Workflow Data| Backend
     Backend -->|Updated Workflow List| Frontend
-
+    
     %% Workflow Execution
     Backend -->|Trigger Execution| Engine
     Engine -->|Summarization Request| Groq
@@ -38,18 +75,18 @@ flowchart LR
     Reports -->|Report Links| Engine
     Engine -->|Results: status, output| Backend
     Backend -->|Notify Frontend<br/>success / error| Frontend
-
+    
     %% Filtering
     User -->|Search / Filter Workflows| Frontend
     Frontend -->|Filter in Zustand Store| Frontend
-
+    
     %% Bulk Delete
     User -->|Bulk Delete Workflows| Frontend
     Frontend -->|Delete Requests| Backend
     Backend -->|Remove Records| Supabase
     Supabase -->|Confirm Deletion| Backend
     Backend -->|Updated Workflow List| Frontend
-
+    
     %% Avatars
     User -->|Upload Avatar| Frontend
     Frontend -->|Send File| Backend
@@ -57,7 +94,7 @@ flowchart LR
     Avatars -->|Avatar URL| Backend
     Backend -->|Updated Profile| Frontend
     Frontend -->|Show Profile Avatar| User
-
+    
     %% Final Outputs
     Backend -->|Processed Results<br/>Updated State| Frontend
     Frontend -->|Outputs: Reports, Emails, Summaries| User

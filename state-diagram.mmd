@@ -1,0 +1,41 @@
+stateDiagram-v2
+    [*] --> Idle
+
+    %% -------- Authentication ----------
+    Idle --> AuthChecking : User opens site
+    AuthChecking --> Authenticated : Valid session
+    AuthChecking --> Unauthenticated : No session
+    Unauthenticated --> Idle : Login/Sign-up successful
+    Authenticated --> WorkflowDashboard
+
+    %% -------- Workflow Creation & Editing ----------
+    WorkflowDashboard --> WorkflowCreation : User clicks "New Workflow"
+    WorkflowCreation --> WorkflowEditing : Workflow created
+    WorkflowEditing --> WorkflowEditing : Add/Edit/Delete nodes
+    WorkflowEditing --> ReadyToExecute : User clicks "Execute Workflow"
+
+    %% -------- Workflow Execution ----------
+    ReadyToExecute --> Running : Engine starts execution
+    Running --> ReadingFile : Node type = readFile
+    Running --> Summarizing : Node type = summarize
+    Running --> SendingEmail : Node type = email
+    Running --> GeneratingReport : Node type = report
+
+    %% -------- Node Execution ----------
+    ReadingFile --> Running : File contents loaded
+    Summarizing --> Running : Summary received
+    Summarizing --> Error : Summarization failed
+    SendingEmail --> Running : Email sent
+    SendingEmail --> Error : Email failed
+    GeneratingReport --> Running : Report generated
+    GeneratingReport --> Error : Report failed
+
+    %% -------- Workflow Results ----------
+    Running --> Success : All nodes succeed
+    Running --> Error : Any node fails
+    Success --> Completed
+    Error --> Failed
+
+    %% -------- End States ----------
+    Completed --> [*]
+    Failed --> [*]
